@@ -112,16 +112,18 @@ int main()
 
 	int timeout = 5000;
 	mcapi_status_t mcapi_status;
-	mcapi_param_t mcapi_parms;
-	mcapi_info_t mcapi_version;
 	mcapi_endpoint_t local_ep;
 	mcapi_endpoint_t remote_ep1;
-#ifdef PARALEL_DFT
+	#ifdef PARALEL_DFT
 	mcapi_endpoint_t remote_ep2;
-#endif
+	#endif
 
+	#ifdef BUILD_APP
+	mcapi_param_t mcapi_parms;
+	mcapi_info_t mcapi_version;
 	mcapi_initialize(DOMAIN, NODE_0, NULL, &mcapi_parms, &mcapi_version, &mcapi_status);
 	mcapiErrorCheck(mcapi_status, "initialize", 2);
+	#endif
 
 	local_ep = mcapi_endpoint_create(CPU_PORT_NUM, &mcapi_status);
 	mcapiErrorCheck(mcapi_status, "create endpoint", 2);
@@ -160,27 +162,28 @@ int main()
 #ifndef LOCAL_DFT
 			// Perform remote DFT
 			send_remote_dft(local_ep, remote_ep1, buffer, test_chunk_lengths[i], 0);
-#ifdef PARALEL_DFT
-			// Paralelize the test
+	#ifdef PARALEL_DFT
 			send_remote_dft(local_ep, remote_ep2, buffer, test_chunk_lengths[i], 0);
-#endif
+	#endif
 			recv_remote_dft(local_ep, buffer, test_chunk_lengths[i], 0);
-#ifdef PARALEL_DFT
+	#ifdef PARALEL_DFT
 			recv_remote_dft(local_ep, buffer, test_chunk_lengths[i], 0);
-#endif
+	#endif
+
 			// Perform remote iDFT
 			send_remote_dft(local_ep, remote_ep1, buffer, test_chunk_lengths[i], 1);
-#ifdef PARALEL_DFT
+	#ifdef PARALEL_DFT
 			send_remote_dft(local_ep, remote_ep2, buffer, test_chunk_lengths[i], 1);
-#endif
+	#endif
 			recv_remote_dft(local_ep, buffer, test_chunk_lengths[i], 1);
-#ifdef PARALEL_DFT
+	#ifdef PARALEL_DFT
 			recv_remote_dft(local_ep, buffer, test_chunk_lengths[i], 1);
 			j ++;
-#endif
+	#endif
 #else
-			// Perform local D
+			// Perform local DFT
 			dft(buffer, out_buffer, test_chunk_lengths[i], 0);
+			// Perform local iDFT
 			dft(buffer, out_buffer, test_chunk_lengths[i], 1);
 #endif
 		}
