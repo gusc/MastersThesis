@@ -14,9 +14,9 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,com.analog.crosscore.managedbuilder.buildType=com.analog.crosscore.managedbuilder.buildType.debug" cleanCommand="rm -rf" description="" id="sharc.toolchain.configuration.debug.2042645581" name="Debug" parent="sharc.toolchain.configuration.debug">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,com.analog.crosscore.managedbuilder.buildType=com.analog.crosscore.managedbuilder.buildType.debug" cleanCommand="clean" description="" id="sharc.toolchain.configuration.debug.2042645581" name="Debug" parent="sharc.toolchain.configuration.debug">
 					<folderInfo id="sharc.toolchain.configuration.debug.2042645581." name="/" resourcePath="">
-						<toolChain id="sharc.toolchain.debug.1411749257" isAbstract="false" name="CrossCore SHARC Toolchain" superClass="sharc.toolchain">
+						<toolChain id="sharc.toolchain.debug.1411749257" isAbstract="false" name="CrossCore SHARC Toolchain" superClass="sharc.toolchain" targetTool="sharc.toolchain.linker">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="sharc.platform.1781020376" name="CrossCore SHARC Target Platform" osList="all" superClass="sharc.platform"/>
 							<builder buildPath="${workspace_loc:/MCAPI_FFT_Core1}/Debug" id="sharc.toolchain.builder.293875435" keepEnvironmentInBuildfile="false" name="CrossCore SHARC Builder" superClass="sharc.toolchain.builder"/>
 							<tool id="sharc.toolchain.assembler.1888568687" name="CrossCore SHARC Assembler" superClass="sharc.toolchain.assembler">
@@ -74,6 +74,7 @@
 							<tool id="sharc.toolchain.loader.1385805069" name="CrossCore SHARC Loader" superClass="sharc.toolchain.loader">
 								<option id="loader.option.proc.1377069067" name="-proc" superClass="loader.option.proc" value=" ADSP-SC589" valueType="string"/>
 								<option id="loader.option.sirevision.1800383873" name="-si-revision" superClass="loader.option.sirevision" value=" 1.0" valueType="string"/>
+								<option id="sharc.loader.option.kernelfile.1927457602" superClass="sharc.loader.option.kernelfile" value="C:\Analog Devices\CrossCore Embedded Studio 2.8.3\SHARC\ldr\_prom.dxe" valueType="string"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
@@ -99,9 +100,9 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,com.analog.crosscore.managedbuilder.buildType=com.analog.crosscore.managedbuilder.buildType.release" cleanCommand="rm -rf" description="" id="sharc.toolchain.configuration.release.1240982089" name="Release" parent="sharc.toolchain.configuration.release">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,com.analog.crosscore.managedbuilder.buildType=com.analog.crosscore.managedbuilder.buildType.release" cleanCommand="clean" description="" id="sharc.toolchain.configuration.release.1240982089" name="Release" parent="sharc.toolchain.configuration.release">
 					<folderInfo id="sharc.toolchain.configuration.release.1240982089." name="/" resourcePath="">
-						<toolChain id="sharc.toolchain.release.1495266934" isAbstract="false" name="CrossCore SHARC Toolchain" superClass="sharc.toolchain">
+						<toolChain id="sharc.toolchain.release.1495266934" isAbstract="false" name="CrossCore SHARC Toolchain" superClass="sharc.toolchain" targetTool="sharc.toolchain.linker">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="sharc.platform.1831836950" name="CrossCore SHARC Target Platform" osList="all" superClass="sharc.platform"/>
 							<builder buildPath="${workspace_loc:/MCAPI_FFT_Core1}/Release" id="sharc.toolchain.builder.341140172" keepEnvironmentInBuildfile="false" name="CrossCore SHARC Builder" superClass="sharc.toolchain.builder"/>
 							<tool id="sharc.toolchain.assembler.231205873" name="CrossCore SHARC Assembler" superClass="sharc.toolchain.assembler">
@@ -159,6 +160,7 @@
 							<tool id="sharc.toolchain.loader.1935358382" name="CrossCore SHARC Loader" superClass="sharc.toolchain.loader">
 								<option id="loader.option.proc.938957168" name="-proc" superClass="loader.option.proc" value=" ADSP-SC589" valueType="string"/>
 								<option id="loader.option.sirevision.1177818726" name="-si-revision" superClass="loader.option.sirevision" value=" 1.0" valueType="string"/>
+								<option id="sharc.loader.option.kernelfile.90205323" superClass="sharc.loader.option.kernelfile" value="C:\Analog Devices\CrossCore Embedded Studio 2.8.3\SHARC\ldr\_prom.dxe" valueType="string"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
@@ -189,4 +191,13 @@
 		</project-mappings>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Debug">
+			<resource resourceType="PROJECT" workspacePath="/MCAPI_DFT_Core1"/>
+		</configuration>
+		<configuration configurationName="Release">
+			<resource resourceType="PROJECT" workspacePath="/MCAPI_DFT_Core1"/>
+		</configuration>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cproject>
