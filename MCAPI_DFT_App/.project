@@ -30,4 +30,32 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 		<nature>com.analog.crosscore.managedbuilder.core.CCESProjectNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>src/DFT.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source/DFT.c</locationURI>
+		</link>
+		<link>
+			<name>src/DFT.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source/DFT.h</locationURI>
+		</link>
+		<link>
+			<name>src/MCAPI_DFT_Core0.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source/MCAPI_DFT_Core0.c</locationURI>
+		</link>
+		<link>
+			<name>src/Messages.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source/Messages.h</locationURI>
+		</link>
+	</linkedResources>
+	<variableList>
+		<variable>
+			<name>CCES</name>
+			<value>file:/opt/analog/cces/2.8.3</value>
+		</variable>
+	</variableList>
 </projectDescription>

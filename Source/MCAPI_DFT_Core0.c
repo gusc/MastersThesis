@@ -46,7 +46,7 @@ static void mcapiErrorCheck(mcapi_status_t mcapi_status, const char *psContext, 
 	if ((MCAPI_SUCCESS != mcapi_status) && (MCAPI_PENDING != mcapi_status))
 	{
 		mcapi_display_status(mcapi_status, errorStringBuff, sizeof(errorStringBuff));
-		printf("MCAPI Error %s, status = %d [%s]\n",
+		printf("MCAPI Core 0 Error %s, status = %d [%s]\n",
 				psContext,
 				mcapi_status,
 				errorStringBuff);
@@ -67,7 +67,7 @@ void send_remote_dft(mcapi_endpoint_t local_ep, mcapi_endpoint_t remote_ep, comp
 	memcpy(remote_data.data, in, remote_data.header.length);
 
 	mcapi_msg_send(local_ep, remote_ep, &remote_data, sizeof(remote_data), 0, &mcapi_status);
-	mcapiErrorCheck(mcapi_status, "msg_send", 2);
+	mcapiErrorCheck(mcapi_status, "send_remote_dft", 2);
 }
 
 void recv_remote_dft(mcapi_endpoint_t local_ep, complex_float_t* out, int N, int inv)
@@ -82,8 +82,12 @@ void recv_remote_dft(mcapi_endpoint_t local_ep, complex_float_t* out, int N, int
 	remote_data.header.type = inv ? MSG_IDFT_BUFFER : MSG_DFT_BUFFER;
 	remote_data.header.length = N * sizeof(complex_float_t);
 
+	mcapi_uint_t res = mcapi_msg_available(local_ep, &mcapi_status);
+	printf("Available: %d\n", res);
+	mcapiErrorCheck(mcapi_status, "msg_available", 2);
+
 	mcapi_msg_recv(local_ep, &remote_data, sizeof(remote_data), &recv_size, &mcapi_status);
-	mcapiErrorCheck(mcapi_status, "msg_recv", 2);
+	mcapiErrorCheck(mcapi_status, "recv_remote_dft", 2);
 
 	memcpy(out, remote_data.data, remote_data.header.length);
 }
@@ -131,12 +135,16 @@ int main()
 
 	remote_ep1 = mcapi_endpoint_get(DOMAIN, NODE_1, CORE1_PORT_NUM, timeout, &mcapi_status);
 	mcapiErrorCheck(mcapi_status, "get endpoint", 2);
+	printf("Node 1 connected\n");
 
-#ifdef PARALEL_DFT
+	#ifdef PARALEL_DFT
 	remote_ep2 = mcapi_endpoint_get(DOMAIN, NODE_1, CORE2_PORT_NUM, timeout, &mcapi_status);
 	mcapiErrorCheck(mcapi_status, "get endpoint", 2);
+	printf("Node 2 connected\n");
+	#endif
 #endif
-#endif
+
+	printf("Prepare test buffer\n");
 	int buffer_len = 4096;
 	complex_float_t buffer[buffer_len];
 	memset(buffer, 0, sizeof(buffer));
@@ -145,10 +153,19 @@ int main()
 		buffer[i].re = (float)rand() / (float)RAND_MAX;
 	}
 
+	printf("Run tests\n");
+
 	// Try different buffer sizes
 	int test_chunk_lengths[] = {32, 64, 128, 256, 512, 1024, 2048, 4096};
+
+	// Imitate a ~10 sec audio processing @ 44.1kHz rounded to power of 2 divisable number
+	int total_samples = 450560;
+
 	for (int i = 0; i < 8; i ++)
 	{
+		printf("Testing %d buffer size:", test_chunk_lengths[i]);
+
+		int repeat_count = total_samples / test_chunk_lengths[i];
 #ifdef LOCAL_DFT
 		complex_float_t out_buffer[test_chunk_lengths[i]];
 		memset(out_buffer, 0, sizeof(out_buffer));
@@ -158,8 +175,9 @@ int main()
 		clock_t clock_start = clock();
 
 		// Repeat test 1000 times
-		for (int j = 0; j < 1000; j ++)
+		for (int j = 0; j < repeat_count; j ++)
 		{
+			printf(".");
 #ifndef LOCAL_DFT
 			// Perform remote DFT
 			send_remote_dft(local_ep, remote_ep1, buffer, test_chunk_lengths[i], 0);
@@ -191,7 +209,7 @@ int main()
 
 		// Benchmark test and print out result
 		float time_diff = (float)(clock() - clock_start) / CLOCKS_PER_SEC;
-		printf("Test %d with %d samples: %f.2 sec\n", i, test_chunk_lengths[i], time_diff);
+		printf("\nTest %d with %d buffer and %d repeats: %f.2 sec\n", i, test_chunk_lengths[i], repeat_count, time_diff);
 	}
 
 	return 0;
