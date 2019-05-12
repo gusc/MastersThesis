@@ -1,5 +1,5 @@
 /*
-** ADSP-SC589 core 2 linker description file generated on May 12, 2019 at 08:42:52.
+** ADSP-SC589 core 1 linker description file generated on May 12, 2019 at 11:27:12.
 */
 /*
 ** Copyright (C) 2000-2018 Analog Devices Inc., All Rights Reserved.
@@ -196,8 +196,8 @@ MEMORY
    mem_L2B7B8_bw           { TYPE(BW RAM) START(0x200b0000) END(0x200bdffb) WIDTH(8) }
    mem_L2B8BC_bw           { TYPE(BW RAM) START(0x200bdffc) END(0x200bffff) WIDTH(8) }
 
-  #define MY_L2_UNCACHED_MEM mem_L2B1P3_bw
-  #define MY_L2_CACHED_MEM   mem_L2B5B6_bw
+  #define MY_L2_UNCACHED_MEM mem_L2B1P4_bw
+  #define MY_L2_CACHED_MEM   mem_L2B7B8_bw
    
    /*$VDSG<insert-new-memory-segments>                          */
    /* Text inserted between these $VDSG comments will be preserved */
@@ -205,7 +205,7 @@ MEMORY
    
 } /* MEMORY */
 
-PROCESSOR SC589_CORE_2
+PROCESSOR SC589_CORE_1
 {
    LINK_AGAINST( $COMMAND_LINE_LINK_AGAINST )
    OUTPUT($COMMAND_LINE_OUTPUT_FILE)
@@ -1145,6 +1145,20 @@ PROCESSOR SC589_CORE_2
       /* Text inserted between these $VDSG comments will be preserved */
       /*$VDSG<insert-new-sections-for-l2>                       */
       
+      // First do inputs for noinit data to the boot code working area memory.
+      dxe_l2bootcode_noinit NO_INIT DM
+      {
+         // L2 no init data.
+         INPUT_SECTIONS( $OBJS_LIBS(seg_l2_noinit_data seg_noinit_data) )
+      } > mem_L2B8BC_bw
+      
+      dxe_l2bootcode_noinit_bw NO_INIT BW
+      {
+         // L2 no init data.
+         INPUT_SECTION_ALIGN(4)
+         INPUT_SECTIONS( $OBJS_LIBS(seg_l2_noinit_data seg_noinit_data) )
+      } > mem_L2B8BC_bw
+      
       #if defined(MY_L2_CACHED_MEM)
       dxe_l2_cpp_ctors_nw DM
       {
@@ -1340,5 +1354,5 @@ PROCESSOR SC589_CORE_2
       /*$VDSG<insert-new-sections-at-the-end>                   */
       
    } /* SECTIONS */
-} /* SC589_CORE_2 */
+} /* SC589_CORE_1 */
 

@@ -1,5 +1,5 @@
 /*
-** adi_initialize.h header file generated on May 12, 2019 at 08:42:48.
+** adi_initialize.h header file generated on May 12, 2019 at 11:26:40.
 **
 ** Copyright (C) 2000-2019 Analog Devices Inc., All Rights Reserved.
 **
@@ -16,7 +16,6 @@ extern "C" {
 #endif
 
 /* Declare "adi_initComponents()" */
-#pragma byte_addressed
 int32_t adi_initComponents(void);
 
 #ifdef __cplusplus

@@ -1,5 +1,5 @@
 /*
-** ADSP-SC589 startup code generated on May 12, 2019 at 08:42:52.
+** ADSP-SC589 startup code generated on May 12, 2019 at 11:27:12.
 */
 /*
 ** Copyright (C) 2000-2018 Analog Devices Inc., All Rights Reserved.
@@ -143,12 +143,12 @@ start:
       ** SHARCs), the processor bypasses the boot ROM code.
       */
       R0 = start;
-      DM(REG_RCU0_SVECT2) = R0;
+      DM(REG_RCU0_SVECT1) = R0;
 
 .WAITLOOP:
       // Wait for this core to be enabled.
       R0 = DM(REG_RCU0_MSG);
-      BTST R0 BY BITP_RCU_MSG_C2ACTIVATE;
+      BTST R0 BY BITP_RCU_MSG_C1ACTIVATE;
       IF SZ JUMP .WAITLOOP;
 
 

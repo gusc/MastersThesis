@@ -35,7 +35,7 @@ It provides information needed to link your code. It can be used to configure me
 						</propertygroup>
 						<propertygroup name="mem_init" value="false"/>
 						<propertygroup name="use_multicores" value="3">
-							<property name="use_core" value="2"/>
+							<property name="use_core" value="1"/>
 						</propertygroup>
 						<property name="main_never_returns" value="false"/>
 						<property name="use_mt" value="false"/>

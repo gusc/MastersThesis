@@ -47,6 +47,7 @@
 									<listOptionValue builtIn="false" value="CORE0"/>
 									<listOptionValue builtIn="false" value="_DEBUG"/>
 									<listOptionValue builtIn="false" value="ADI_MCAPI"/>
+									<listOptionValue builtIn="false" value="ADI_DEBUG"/>
 								</option>
 								<option id="arm.toolchain.cpp.compiler.option.coreid.2091466615" name="Specify the core Id (-DCORE[A|B|0-2])" superClass="arm.toolchain.cpp.compiler.option.coreid" value="0" valueType="string"/>
 								<option id="arm.base.compiler.option.include.paths.1220406357" name="Additional include directories (-I):" superClass="arm.base.compiler.option.include.paths" valueType="includePath">
@@ -163,6 +164,9 @@
 								<option id="arm.toolchain.cpp.compiler.option.coreid.319970229" name="Specify the core Id (-DCORE[A|B|0-2])" superClass="arm.toolchain.cpp.compiler.option.coreid" value="0" valueType="string"/>
 								<option id="arm.base.compiler.option.include.paths.113413268" name="Additional include directories (-I):" superClass="arm.base.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/system}&quot;"/>
+								</option>
+								<option id="arm.base.compiler.option.additionaloptions.1992837144" name="Additional options:" superClass="arm.base.compiler.option.additionaloptions" valueType="stringList">
+									<listOptionValue builtIn="false" value="-std=gnu99"/>
 								</option>
 								<inputType id="arm.toolchain.bare.c.input.1619838116" name="C Source" superClass="arm.toolchain.bare.c.input"/>
 							</tool>

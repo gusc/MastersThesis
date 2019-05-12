@@ -3,12 +3,13 @@
  *****************************************************************************/
 
 //#define BUILD_APP 1 // Runs on OS, otherwise runs bare metal
-#define LOCAL_DFT 1 // Don't use MCAPI, just DFT in-place
+//#define LOCAL_DFT 1 // Don't use MCAPI, just DFT in-place
 //#define PARALEL_DFT 1 // When running MCAPI, try to parallelize DFT on multiple SHARC cores
 
 #ifndef BUILD_APP
 #include <sys/platform.h>
 #include <sys/adi_core.h>
+#include <cycle_count.h>
 #include "adi_initialize.h"
 #endif
 
@@ -118,6 +119,8 @@ int main()
 	 */
 	adi_core_enable(ADI_CORE_SHARC0);
 	adi_core_enable(ADI_CORE_SHARC1);
+
+	CCNTR_INIT;
 #endif
 
 #ifndef LOCAL_DFT
@@ -183,7 +186,11 @@ int main()
 #endif
 
 		// Mark the start
+#ifndef BUILD_APP
+		CCNTR_START;
+#else
 		clock_t clock_start = clock();
+#endif
 
 		// Repeat test 1000 times
 		for (int j = 0; j < repeat_count; j ++)
@@ -218,7 +225,13 @@ int main()
 		}
 
 		// Benchmark test and print out result
+#ifndef BUILD_APP
+		CCNTR_STOP;
+		int res = CCNTR_READ;
+		float time_diff = (float)(res) / 450000000.f;
+#else
 		float time_diff = (float)(clock() - clock_start) / CLOCKS_PER_SEC;
+#endif
 		printf("Done %d repeats in %f.2 sec\n", repeat_count, time_diff);
 	}
 
