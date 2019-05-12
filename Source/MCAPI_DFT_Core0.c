@@ -4,7 +4,7 @@
 
 //#define BUILD_APP 1 // Runs on OS, otherwise runs bare metal
 //#define LOCAL_DFT 1 // Don't use MCAPI, just DFT in-place
-//#define PARALEL_DFT 1 // When running MCAPI, try to parallelize DFT on multiple SHARC cores
+#define PARALEL_DFT 1 // When running MCAPI, try to parallelize DFT on multiple SHARC cores
 
 #ifndef BUILD_APP
 #include <sys/platform.h>
@@ -22,8 +22,8 @@
 #define NODE_2			2
 #define CORE1_PORT_NUM	5
 #define CORE2_PORT_NUM	6
-#define CPU_PORT_NUM1	101
-#define CPU_PORT_NUM2	102
+#define CPU_PORT_NUM1	3
+#define CPU_PORT_NUM2	4
 #endif
 
 #define MAX_BUFFER_SIZE 16
@@ -126,7 +126,11 @@ int main()
 #ifndef LOCAL_DFT
 	/* Initialize MCAPI */
 
+#ifndef BUILD_APP
+	int timeout = MCAPI_TIMEOUT_INFINITE;
+#else
 	int timeout = 5000;
+#endif
 	mcapi_status_t mcapi_status;
 	mcapi_endpoint_t local_ep1;
 	mcapi_endpoint_t remote_ep1;

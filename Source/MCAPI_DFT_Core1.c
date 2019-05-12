@@ -19,7 +19,7 @@ char __argv_string[] = "";
 #define DOMAIN			0
 #define NODE_0			0
 #define CORE_PORT_NUM	5
-#define CPU_PORT_NUM	101 // Core1 connects to 101, Core2 to 102
+#define CPU_PORT_NUM	3 // Core1 connects to 101, Core2 to 102
 
 #define MAX_BUFFER_SIZE 16
 
