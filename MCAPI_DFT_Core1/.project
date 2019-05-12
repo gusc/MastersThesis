@@ -38,4 +38,10 @@
 			<locationURI>PARENT-1-PROJECT_LOC/MCAPI_DFT_Core0/src/DFT.c</locationURI>
 		</link>
 	</linkedResources>
+	<variableList>
+		<variable>
+			<name>CCES</name>
+			<value>file:/opt/analog/cces/2.8.3</value>
+		</variable>
+	</variableList>
 </projectDescription>
