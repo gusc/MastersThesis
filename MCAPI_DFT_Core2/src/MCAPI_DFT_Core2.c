@@ -8,8 +8,8 @@
 #include <string.h>
 #include <stdio.h>
 #include "adi_initialize.h"
-#include "../../MCAPI_DFT_Core0/src/DFT.h"
-#include "../../MCAPI_DFT_Core0/src/Messages.h"
+#include "DFT.h"
+#include "Messages.h"
 
 /** 
  * If you want to use command program arguments, then place them in the following string. 

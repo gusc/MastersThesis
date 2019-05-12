@@ -31,13 +31,6 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 		<nature>com.analog.crosscore.managedbuilder.core.CCESProjectNature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>src/DFT.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/MCAPI_DFT_Core0/src/DFT.c</locationURI>
-		</link>
-	</linkedResources>
 	<variableList>
 		<variable>
 			<name>CCES</name>
