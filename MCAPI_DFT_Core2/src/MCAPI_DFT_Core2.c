@@ -38,7 +38,7 @@ static void mcapiErrorCheck(mcapi_status_t mcapi_status, const char *psContext, 
 	if ((MCAPI_SUCCESS != mcapi_status) && (MCAPI_PENDING != mcapi_status))
 	{
 		mcapi_display_status(mcapi_status, errorStringBuff, sizeof(errorStringBuff));
-		printf("MCAPI Error %s, status = %d [%s]\n",
+		printf("MCAPI Core 2 Error %s, status = %d [%s]\n",
 				psContext,
 				mcapi_status,
 				errorStringBuff);
@@ -68,6 +68,8 @@ int main(int argc, char *argv[])
 	mcapiErrorCheck(mcapi_status, "get endpoint", 2);
 
 	/* DFT processor */
+
+	printf("Starting core 2 processor\n");
 
 	bool end_process_received = false;
 	size_t recv_size = 0;
