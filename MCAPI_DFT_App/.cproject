@@ -49,7 +49,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/system}&quot;"/>
 									<listOptionValue builtIn="false" value="/home/gusc/sc5xx_dev/buildroot/output/build/libmcapi-HEAD/libmcapi-2.0/include"/>
 								</option>
-								<option id="arm.base.compiler.option.additionaloptions.347606689" superClass="arm.base.compiler.option.additionaloptions" valueType="stringList">
+								<option id="arm.base.compiler.option.additionaloptions.347606689" name="Additional options:" superClass="arm.base.compiler.option.additionaloptions" valueType="stringList">
 									<listOptionValue builtIn="false" value="-std=gnu99"/>
 								</option>
 								<inputType id="arm.toolchain.linux.c.input.1914943212" superClass="arm.toolchain.linux.c.input"/>
@@ -154,17 +154,28 @@
 								<option id="arm.base.compiler.option.sirevision.1849965200" name="-msi-revision" superClass="arm.base.compiler.option.sirevision" value=" 1.0" valueType="string"/>
 								<option id="arm.base.compiler.option.preprocessdefs.1422533910" name="Preprocessor definitions (-D):" superClass="arm.base.compiler.option.preprocessdefs" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="CORE0"/>
+									<listOptionValue builtIn="false" value="BUILD_APP"/>
 									<listOptionValue builtIn="false" value="NDEBUG"/>
 								</option>
 								<option id="arm.toolchain.cpp.compiler.option.coreid.259056547" name="Specify the core Id (-DCORE[A|B|0-2])" superClass="arm.toolchain.cpp.compiler.option.coreid" value="0" valueType="string"/>
 								<option id="arm.base.compiler.option.include.paths.1667832491" name="Additional include directories (-I):" superClass="arm.base.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/system}&quot;"/>
+									<listOptionValue builtIn="false" value="/home/gusc/sc5xx_dev/buildroot/output/build/libmcapi-HEAD/libmcapi-2.0/include"/>
+								</option>
+								<option id="arm.base.compiler.option.additionaloptions.2090840152" superClass="arm.base.compiler.option.additionaloptions" valueType="stringList">
+									<listOptionValue builtIn="false" value="-std=gnu99"/>
 								</option>
 								<inputType id="arm.toolchain.linux.c.input.911500638" superClass="arm.toolchain.linux.c.input"/>
 							</tool>
 							<tool id="arm.toolchain.linux.c.linker.768882336" name="CrossCore ARM Linux C Linker" superClass="arm.toolchain.linux.c.linker">
 								<option id="arm.linker.option.proc.1020341878" name="-mproc" superClass="arm.linker.option.proc" value=" ADSP-SC589" valueType="string"/>
 								<option id="arm.linker.option.sirevision.387938516" name="-msi-revision" superClass="arm.linker.option.sirevision" value=" 1.0" valueType="string"/>
+								<option id="arm.linker.option.paths.1901597176" name="Library search directories (-L):" superClass="arm.linker.option.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="/home/gusc/sc5xx_dev/buildroot/output/target/usr/lib"/>
+								</option>
+								<option id="arm.linker.option.libs.666169134" name="Additional libraries (-l):" superClass="arm.linker.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="mcapi"/>
+								</option>
 								<inputType id="arm.linker.input.418257926" superClass="arm.linker.input">
 									<additionalInput kind="additionaldependency" paths="$(USER_OBJS)"/>
 								</inputType>
