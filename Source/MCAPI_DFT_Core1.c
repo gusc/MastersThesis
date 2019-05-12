@@ -87,6 +87,13 @@ int main(int argc, char *argv[])
 
 	while (!end_process_received)
 	{
+		mcapi_uint_t res = 0;
+		while (res == 0)
+		{
+			res = mcapi_msg_available(local_ep, &mcapi_status);
+			mcapiErrorCheck(mcapi_status, "msg_available", 2);
+		}
+
 		mcapi_msg_recv(local_ep, &remote_data, sizeof(remote_data), &recv_size, &mcapi_status);
 		mcapiErrorCheck(mcapi_status, "msg_recv", 2);
 
@@ -95,7 +102,7 @@ int main(int argc, char *argv[])
 			if (remote_data.header.type == MSG_DFT_BUFFER || remote_data.header.type == MSG_IDFT_BUFFER)
 			{
 				// Process DFT
-				if (remote_data.header.length > MAX_BUFFER_SIZE * sizeof(complex_float_t))
+				if (remote_data.header.length > MAX_BUFFER_SIZE)
 				{
 					char msg[] = "Data too long";
 					memcpy(error_data.data, msg, sizeof(msg));
@@ -108,10 +115,11 @@ int main(int argc, char *argv[])
 
 				complex_float_t out_data[MAX_BUFFER_SIZE];
 				int data_len = remote_data.header.length;
+				int data_len_bytes = data_len * sizeof(complex_float_t);
 				dft(remote_data.data, out_data, data_len, (remote_data.header.type == MSG_IDFT_BUFFER));
-				memcpy(remote_data.data, out_data, data_len);
+				memcpy(remote_data.data, out_data, data_len_bytes);
 
-				mcapi_msg_send(local_ep, remote_ep, &remote_data, sizeof(message_header_t) + data_len, 0, &mcapi_status);
+				mcapi_msg_send(local_ep, remote_ep, &remote_data, sizeof(message_header_t) + data_len_bytes, 0, &mcapi_status);
 				mcapiErrorCheck(mcapi_status, "msg_send", 2);
 				continue;
 			}

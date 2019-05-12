@@ -1,6 +1,10 @@
 .metadata
 MCAPI_DFT_App/Debug
+MCAPI_DFT_App/Release
 MCAPI_DFT_Core0/Debug
+MCAPI_DFT_Core0/Release
 MCAPI_DFT_Core1/Debug
+MCAPI_DFT_Core1/Release
 MCAPI_DFT_Core2/Debug
+MCAPI_DFT_Core2/Release
 RemoteSystemsTempFiles

@@ -12,7 +12,7 @@ typedef int message_t;
 typedef struct
 {
 	message_t type;		// Data type
-	int length;			// Data length
+	int length;			// Count of data samples
 } message_header_t;
 
 static const message_t MSG_DFT_BUFFER = 1;
