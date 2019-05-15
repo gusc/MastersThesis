@@ -4,7 +4,7 @@
 
 //#define BUILD_APP 1 // Runs on OS, otherwise runs bare metal
 //#define LOCAL_DFT 1 // Don't use MCAPI, just DFT in-place
-#define PARALEL_DFT 1 // When running MCAPI, try to parallelize DFT on multiple SHARC cores
+//#define PARALEL_DFT 1 // When running MCAPI, try to parallelize DFT on multiple SHARC cores
 
 #ifndef BUILD_APP
 #include <sys/platform.h>
