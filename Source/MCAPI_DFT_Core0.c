@@ -28,11 +28,13 @@
 
 #define MAX_BUFFER_SIZE 16
 
+#include <sys/times.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 #include "DFT.h"
 
 #ifndef LOCAL_DFT
@@ -126,11 +128,12 @@ int main()
 #ifndef LOCAL_DFT
 	/* Initialize MCAPI */
 
-#ifndef BUILD_APP
+	#ifndef BUILD_APP
 	int timeout = MCAPI_TIMEOUT_INFINITE;
-#else
+	#else
 	int timeout = 5000;
-#endif
+	#endif
+
 	mcapi_status_t mcapi_status;
 	mcapi_endpoint_t local_ep1;
 	mcapi_endpoint_t remote_ep1;
@@ -193,7 +196,10 @@ int main()
 #ifndef BUILD_APP
 		CCNTR_START;
 #else
+		struct tms st_cpu;
+		struct tms en_cpu;
 		clock_t clock_start = clock();
+		clock_t st_time = times(&st_cpu);
 #endif
 
 		// Repeat test 1000 times
@@ -234,7 +240,17 @@ int main()
 		int res = CCNTR_READ;
 		float time_diff = (float)(res) / 450000000.f;
 #else
-		float time_diff = (float)(clock() - clock_start) / CLOCKS_PER_SEC;
+		clock_t clock_end = clock();
+		clock_t en_time = times(&en_cpu);
+		long ticks = sysconf(_SC_CLK_TCK);
+		printf("Real Time: %jd, User Time %jd, System Time %jd, Ticks: %jd\n",
+		        (intmax_t)(en_time - st_time),
+				(intmax_t)(en_cpu.tms_utime - st_cpu.tms_utime),
+		        (intmax_t)(en_cpu.tms_stime - st_cpu.tms_stime),
+				(intmax_t)ticks);
+		printf("Clock Time: %jd, Clocks per sec: %jd\n",
+				(intmax_t)(clock_end - clock_start), (intmax_t)CLOCKS_PER_SEC);
+		float time_diff = (float)(clock_end - clock_start) / CLOCKS_PER_SEC;
 #endif
 		printf("Done %d repeats in %f.2 sec\n", repeat_count, time_diff);
 	}
