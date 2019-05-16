@@ -75,8 +75,10 @@ int main(int argc, char *argv[])
 		int result = 0;
 		STOP_CYCLE_COUNT(result, counter);
 		float time_diff = (float)(clock() - clock_start) / CLOCKS_PER_SEC;
+		printf("Done %d repeats in %.3f sec\n", repeat_count, time_diff);
 		float time_diff2 = (float)result / 450000000.f;
-		printf("Done %d repeats in %.3f sec (%.3f)\n", repeat_count, time_diff, result);
+		printf("CYCLE_COUNT %d, @450mHz\n", result);
+		printf("CYCLE_COUNT Done %d repeats in %.3f sec\n", repeat_count, time_diff2);
 	}
 
 	return 0;

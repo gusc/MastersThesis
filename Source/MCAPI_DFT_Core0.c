@@ -239,6 +239,7 @@ int main()
 		CCNTR_STOP;
 		int res = CCNTR_READ;
 		float time_diff = (float)(res) / 450000000.f;
+		printf("CCNTR %jd, @450mHz\n", (intmax_t)res);
 #else
 		clock_t clock_end = clock();
 		clock_t en_time = times(&en_cpu);
@@ -252,7 +253,7 @@ int main()
 				(intmax_t)(clock_end - clock_start), (intmax_t)CLOCKS_PER_SEC);
 		float time_diff = (float)(clock_end - clock_start) / CLOCKS_PER_SEC;
 #endif
-		printf("Done %d repeats in %f.2 sec\n", repeat_count, time_diff);
+		printf("Done %d repeats in %.3f sec\n", repeat_count, time_diff);
 	}
 
 	return 0;
