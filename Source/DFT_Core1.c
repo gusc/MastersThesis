@@ -2,6 +2,8 @@
  * MCAPI_FFT_Core1.c
  *****************************************************************************/
 
+#define USE_FFT 1
+
 #include <sys/platform.h>
 #include <sys/adi_core.h>
 #include <cycle_count.h>
@@ -12,6 +14,7 @@
 #include <stdlib.h>
 #include "adi_initialize.h"
 #include "DFT.h"
+#include "Radix2FFT.h"
 
 /** 
  * If you want to use command program arguments, then place them in the following string. 
@@ -65,10 +68,17 @@ int main(int argc, char *argv[])
 		// Repeat test 1000 times
 		for (int j = 0; j < repeat_count; j ++)
 		{
+#ifdef USE_FFT
+			// Perform local FFT
+			Radix2FFT(buffer, out_buffer, test_chunk_lengths[i]);
+			// Perform local iFFT
+			Radix2iFFT(buffer, out_buffer, test_chunk_lengths[i]);
+#else
 			// Perform local DFT
 			dft(buffer, out_buffer, test_chunk_lengths[i], 0);
 			// Perform local iDFT
 			dft(buffer, out_buffer, test_chunk_lengths[i], 1);
+#endif
 		}
 
 		// Benchmark test and print out result

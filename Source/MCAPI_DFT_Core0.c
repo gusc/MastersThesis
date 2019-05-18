@@ -27,7 +27,7 @@
 #define CPU_PORT_NUM2	4
 #endif
 
-#define MAX_BUFFER_SIZE 16
+#define MAX_BUFFER_SIZE 4096
 #define MAX_MESSAGE_SIZE 256 // SHARC bare metal framework has 256 byte limit for MCAPI messages
 
 #include <sys/times.h>
@@ -70,13 +70,12 @@ void send_remote_dft(mcapi_endpoint_t local_ep, mcapi_endpoint_t remote_ep, comp
 	mcapi_status_t mcapi_status;
 
 	size_t max_sample_count = (MAX_MESSAGE_SIZE - sizeof(message_header_t)) / sizeof(complex_float_t);
-	size_t max_data_size = max_sample_count * sizeof(complex_float_t);
 	size_t num_messages = N / max_sample_count;
 
 	for (size_t i = 0; i < num_messages; i ++)
 	{
-		size_t offset = i * max_data_size;
-		size_t num_samples = N - (max_sample_count * i);
+		size_t offset = i * max_sample_count;
+		size_t num_samples = N - offset;
 		if (num_samples > max_sample_count)
 		{
 			num_samples = max_sample_count;
@@ -109,8 +108,6 @@ void recv_remote_dft(mcapi_endpoint_t local_ep, complex_float_t* out, int N, int
 	size_t recv_size = 0;
 
 	size_t max_sample_count = (MAX_MESSAGE_SIZE - sizeof(message_header_t)) / sizeof(complex_float_t);
-	size_t max_data_size = max_sample_count * sizeof(complex_float_t);
-	size_t max_num_messages = N / max_sample_count;
 
 	bool end = false;
 	size_t offset = 0;

@@ -47,5 +47,21 @@
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Source/DFT_Core1.c</locationURI>
 		</link>
+		<link>
+			<name>src/Radix2FFT.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source/Radix2FFT.c</locationURI>
+		</link>
+		<link>
+			<name>src/Radix2FFT.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source/Radix2FFT.h</locationURI>
+		</link>
 	</linkedResources>
+	<variableList>
+		<variable>
+			<name>CCES</name>
+			<value>file:/C:/Analog%20Devices/CrossCore%20Embedded%20Studio%202.8.3</value>
+		</variable>
+	</variableList>
 </projectDescription>
