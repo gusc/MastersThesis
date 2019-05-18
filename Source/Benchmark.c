@@ -17,6 +17,8 @@ static unsigned int counter_handle;
 #endif
 #else
 #include <time.h>
+#include <sys/times.h>
+#include <unistd.h>
 // clock()
 clock_t start_clock;
 // times()
@@ -107,10 +109,10 @@ void StopBenchmark()
     clock_t end_clock = clock();
 	clock_t end_time = times(&end_cpu_counters);
 	long ticks = sysconf(_SC_CLK_TCK);
-	printf("Benchmark CPU ticks: %d\n", ticks);
-	printf("    Real time: %d or %.3f sec", end_time - start_time, (float)(end_time - start_time) / ticks)
-	printf("    User time: %d or %.3f sec", en_cpu.tms_utime - st_cpu.tms_utime, (float)(en_cpu.tms_utime - st_cpu.tms_utime) / ticks)
-	printf("     Sys time: %d or %.3f sec", en_cpu.tms_stime - st_cpu.tms_stime, (float)(en_cpu.tms_stime - st_cpu.tms_stime) / ticks)
-	printf("        Clock: %d or %.3f sec (@ %d CPS)", end_clock - start_clock, (float)(end_clock - start_clock) / CLOCKS_PER_SEC, CLOCKS_PER_SEC);
+	printf("Benchmark CPU ticks: %ld\n", ticks);
+	printf("    Real time: %ld or %.3f sec\n", end_time - start_time, (float)(end_time - start_time) / ticks);
+	printf("    User time: %ld or %.3f sec\n", end_cpu_counters.tms_utime - start_cpu_counters.tms_utime, (float)(end_cpu_counters.tms_utime - start_cpu_counters.tms_utime) / ticks);
+	printf("     Sys time: %ld or %.3f sec\n", end_cpu_counters.tms_stime - start_cpu_counters.tms_stime, (float)(end_cpu_counters.tms_stime - start_cpu_counters.tms_stime) / ticks);
+	printf("        Clock: %ld or %.3f sec (@ %ld CPS)\n", end_clock - start_clock, (float)(end_clock - start_clock) / CLOCKS_PER_SEC, CLOCKS_PER_SEC);
 #endif
 }

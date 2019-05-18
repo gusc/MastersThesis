@@ -162,7 +162,7 @@ int main()
 	#ifndef BUILD_APP
 	int timeout = MCAPI_TIMEOUT_INFINITE;
 	#else
-	int timeout = 5000;
+	int timeout = 500000;
 	#endif
 
 	mcapi_status_t mcapi_status;
