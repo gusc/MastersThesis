@@ -10,8 +10,11 @@
 
 #ifndef BUILD_APP
 #include <cycle_count.h>
-static unsigned int counter_hi;
 static unsigned int counter;
+static unsigned int counter_hi;
+#ifndef __arm__
+static unsigned int counter_handle;
+#endif
 #else
 #include <time.h>
 // clock()
@@ -22,11 +25,16 @@ clock_t start_time;
 #endif
 
 #include <stdint.h>
+#include <stdio.h>
 
 void InitBenchmark()
 {
 #ifndef BUILD_APP
+	#ifdef __arm__
 	CCNTR_INIT;
+	#else
+	counter_handle = 0;
+	#endif
 #endif
 }
 
@@ -35,8 +43,12 @@ void StartBenchmark()
 #ifndef BUILD_APP
 	counter_hi = 0;
 	counter = 0;
+	#ifdef __arm__
 	CCNTR_RESET;
 	CCNTR_START;
+	#else
+	START_CYCLE_COUNT(counter_handle);
+	#endif
 #else
 	start_clock = clock();
 	start_time = times(&start_cpu_counters);
@@ -46,12 +58,19 @@ void StartBenchmark()
 #ifndef BUILD_APP
 static void _UpdateTimers()
 {
+	#ifdef __arm__
+	CCNTR_STOP;
 	unsigned int res = CCNTR_READ;
 	unsigned int overflow = CCNTR_CHECK_OVERFLOW;
 	if (overflow)
 	{
 		counter_hi++;
 	}
+	#else
+	int res = 0;
+	STOP_CYCLE_COUNT(res, counter_handle);
+	#endif
+
 	unsigned int counter_prev = counter;
 	counter += res;
 	if (counter < counter_prev)
@@ -65,17 +84,20 @@ static void _UpdateTimers()
 void UpdateBenchmark()
 {
 #ifndef BUILD_APP
-	CCNTR_STOP;
 	_UpdateTimers();
+	#ifdef __arm__
 	CCNTR_RESET;
 	CCNTR_START;
+	#else
+	counter_handle = 0;
+	START_CYCLE_COUNT(counter_handle);
+	#endif
 #endif
 }
 
 void StopBenchmark()
 {
 #ifndef BUILD_APP
-	CCNTR_STOP;
 	_UpdateTimers();
 	double cycles = (double)counter + ((double)counter_hi * (double)UINT32_MAX);
 	double time = cycles / (double)BENCHMARK_CPU_SPEED;

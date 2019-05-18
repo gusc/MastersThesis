@@ -33,6 +33,21 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>src/Benchmark.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source/Benchmark.c</locationURI>
+		</link>
+		<link>
+			<name>src/Benchmark.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source/Benchmark.h</locationURI>
+		</link>
+		<link>
+			<name>src/Config.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source/Config.h</locationURI>
+		</link>
+		<link>
 			<name>src/DFT.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Source/DFT.c</locationURI>

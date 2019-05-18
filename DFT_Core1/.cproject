@@ -44,6 +44,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/system}&quot;"/>
 								</option>
 								<option id="compiler.option.compilerswitch.850941260" name="Compiler Switch" superClass="compiler.option.compilerswitch" value="false" valueType="boolean"/>
+								<option id="sharc.compiler.option.additionaloptions.868986714" name="Additional options:" superClass="sharc.compiler.option.additionaloptions" valueType="stringList"/>
 								<inputType id="compiler.inputType.1995569715" name="C/C++ Source" superClass="compiler.inputType"/>
 							</tool>
 							<tool id="sharc.toolchain.linker.1052210773" name="CrossCore SHARC Linker" superClass="sharc.toolchain.linker">
@@ -61,7 +62,7 @@
 								<option id="linker.option.srchdir.1714823855" name="Library search directories (-L):" superClass="linker.option.srchdir" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${OutDir}/system/startup_ldf&quot;"/>
 								</option>
-								<option id="linker.option.misrachecksrcfiles.25489177" superClass="linker.option.misrachecksrcfiles" value="true" valueType="boolean"/>
+								<option id="linker.option.misrachecksrcfiles.25489177" name="-misra-no-cross-module" superClass="linker.option.misrachecksrcfiles" value="true" valueType="boolean"/>
 								<inputType id="linker.doj.input.1201052198" name="Object Files" superClass="linker.doj.input"/>
 							</tool>
 							<tool id="sharc.toolchain.archiver.946512394" name="CrossCore SHARC Archiver" superClass="sharc.toolchain.archiver">
@@ -71,12 +72,13 @@
 							<tool id="sharc.toolchain.loader.10667376" name="CrossCore SHARC Loader" superClass="sharc.toolchain.loader">
 								<option id="loader.option.proc.1950480895" name="-proc" superClass="loader.option.proc" value=" ADSP-SC589" valueType="string"/>
 								<option id="loader.option.sirevision.969123129" name="-si-revision" superClass="loader.option.sirevision" value=" 1.0" valueType="string"/>
-								<option id="sharc.loader.option.kernelfile.1401373715" superClass="sharc.loader.option.kernelfile" value="C:\Analog Devices\CrossCore Embedded Studio 2.8.3\SHARC\ldr\_prom.dxe" valueType="string"/>
+								<option id="sharc.loader.option.kernelfile.1401373715" name="Kernel file (-l)" superClass="sharc.loader.option.kernelfile" value="C:\Analog Devices\CrossCore Embedded Studio 2.8.3\SHARC\ldr\_prom.dxe" valueType="string"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
 					<folderInfo id="sharc.toolchain.configuration.debug.654289556.system" name="system" resourcePath="system">
 						<toolChain id="sharc.toolchain.1018810947" name="CrossCore SHARC Toolchain" superClass="sharc.toolchain" unusedChildren="">
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="sharc.platform" name="CrossCore SHARC Target Platform" osList="all" superClass="sharc.platform"/>
 							<tool id="sharc.toolchain.assembler.1410830806" name="CrossCore SHARC Assembler" superClass="sharc.toolchain.assembler.1150941996">
 								<inputType id="assembler.input.329192093" name="Assembler Source" superClass="assembler.input"/>
 							</tool>
@@ -140,6 +142,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/system}&quot;"/>
 								</option>
 								<option id="compiler.option.compilerswitch.1982837112" name="Compiler Switch" superClass="compiler.option.compilerswitch" value="false" valueType="boolean"/>
+								<option id="sharc.compiler.option.additionaloptions.977497638" name="Additional options:" superClass="sharc.compiler.option.additionaloptions" valueType="stringList"/>
 								<inputType id="compiler.inputType.1539021974" name="C/C++ Source" superClass="compiler.inputType"/>
 							</tool>
 							<tool id="sharc.toolchain.linker.1258341901" name="CrossCore SHARC Linker" superClass="sharc.toolchain.linker">
@@ -157,7 +160,7 @@
 								<option id="linker.option.srchdir.1851481361" name="Library search directories (-L):" superClass="linker.option.srchdir" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${OutDir}/system/startup_ldf&quot;"/>
 								</option>
-								<option id="linker.option.misrachecksrcfiles.1281076570" superClass="linker.option.misrachecksrcfiles" value="true" valueType="boolean"/>
+								<option id="linker.option.misrachecksrcfiles.1281076570" name="-misra-no-cross-module" superClass="linker.option.misrachecksrcfiles" value="true" valueType="boolean"/>
 								<inputType id="linker.doj.input.454600491" name="Object Files" superClass="linker.doj.input"/>
 							</tool>
 							<tool id="sharc.toolchain.archiver.940554609" name="CrossCore SHARC Archiver" superClass="sharc.toolchain.archiver">
@@ -167,12 +170,13 @@
 							<tool id="sharc.toolchain.loader.2145255027" name="CrossCore SHARC Loader" superClass="sharc.toolchain.loader">
 								<option id="loader.option.proc.212145575" name="-proc" superClass="loader.option.proc" value=" ADSP-SC589" valueType="string"/>
 								<option id="loader.option.sirevision.1406712972" name="-si-revision" superClass="loader.option.sirevision" value=" 1.0" valueType="string"/>
-								<option id="sharc.loader.option.kernelfile.1812479508" superClass="sharc.loader.option.kernelfile" value="C:\Analog Devices\CrossCore Embedded Studio 2.8.3\SHARC\ldr\_prom.dxe" valueType="string"/>
+								<option id="sharc.loader.option.kernelfile.1812479508" name="Kernel file (-l)" superClass="sharc.loader.option.kernelfile" value="C:\Analog Devices\CrossCore Embedded Studio 2.8.3\SHARC\ldr\_prom.dxe" valueType="string"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
 					<folderInfo id="sharc.toolchain.configuration.release.1662194918.system" name="system" resourcePath="system">
 						<toolChain id="sharc.toolchain.971102466" name="CrossCore SHARC Toolchain" superClass="sharc.toolchain" unusedChildren="">
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="sharc.platform" name="CrossCore SHARC Target Platform" osList="all" superClass="sharc.platform"/>
 							<tool id="sharc.toolchain.assembler.2051444223" name="CrossCore SHARC Assembler" superClass="sharc.toolchain.assembler.161709696">
 								<inputType id="assembler.input.1616784146" name="Assembler Source" superClass="assembler.input"/>
 							</tool>
