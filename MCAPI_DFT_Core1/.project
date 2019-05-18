@@ -48,11 +48,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Source/MCAPI_DFT_Core1.c</locationURI>
 		</link>
 		<link>
-			<name>src/Messages.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source/Messages.c</locationURI>
-		</link>
-		<link>
 			<name>src/Messages.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Source/Messages.h</locationURI>
