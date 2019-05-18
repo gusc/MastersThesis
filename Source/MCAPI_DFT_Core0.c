@@ -5,6 +5,7 @@
 //#define BUILD_APP 1 // Runs on OS, otherwise runs bare metal
 //#define LOCAL_DFT 1 // Don't use MCAPI, just DFT in-place
 //#define PARALEL_DFT 1 // When running MCAPI, try to parallelize DFT on multiple SHARC cores
+#define USE_FFT 1 // Use Radix-2 FFT instead
 
 #ifndef BUILD_APP
 #include <sys/platform.h>
@@ -27,15 +28,18 @@
 #endif
 
 #define MAX_BUFFER_SIZE 16
+#define MAX_MESSAGE_SIZE 256 // SHARC bare metal framework has 256 byte limit for MCAPI messages
 
 #include <sys/times.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <time.h>
 #include <unistd.h>
 #include "DFT.h"
+#include "Radix2FFT.h"
 
 #ifndef LOCAL_DFT
 /*
@@ -65,16 +69,38 @@ void send_remote_dft(mcapi_endpoint_t local_ep, mcapi_endpoint_t remote_ep, comp
 {
 	mcapi_status_t mcapi_status;
 
-	struct {
-		message_header_t header;
-		complex_float_t data[N];
-	} remote_data;
-	remote_data.header.type = inv ? MSG_IDFT_BUFFER : MSG_DFT_BUFFER;
-	remote_data.header.length = N;
-	memcpy(remote_data.data, in, remote_data.header.length * sizeof(complex_float_t));
+	size_t max_sample_count = (MAX_MESSAGE_SIZE - sizeof(message_header_t)) / sizeof(complex_float_t);
+	size_t max_data_size = max_sample_count * sizeof(complex_float_t);
+	size_t num_messages = N / max_sample_count;
 
-	mcapi_msg_send(local_ep, remote_ep, &remote_data, sizeof(remote_data), 0, &mcapi_status);
-	mcapiErrorCheck(mcapi_status, "send_remote_dft", 2);
+	for (size_t i = 0; i < num_messages; i ++)
+	{
+		size_t offset = i * max_data_size;
+		size_t num_samples = N - (max_sample_count * i);
+		if (num_samples > max_sample_count)
+		{
+			num_samples = max_sample_count;
+		}
+
+		struct {
+			message_header_t header;
+			complex_float_t data[num_samples];
+		} remote_data;
+#ifdef USE_FFT
+		remote_data.header.type = inv ? MSG_IFFT_BUFFER : MSG_FFT_BUFFER;
+#else
+		remote_data.header.type = inv ? MSG_IDFT_BUFFER : MSG_DFT_BUFFER;
+#endif
+		remote_data.header.length = num_samples;
+		remote_data.header.total_length = N;
+		remote_data.header.total_count = num_messages;
+		remote_data.header.message_index = i;
+
+		memcpy(remote_data.data, in + offset, remote_data.header.length * sizeof(complex_float_t));
+
+		mcapi_msg_send(local_ep, remote_ep, &remote_data, sizeof(remote_data), 0, &mcapi_status);
+		mcapiErrorCheck(mcapi_status, "send_remote_dft", 2);
+	}
 }
 
 void recv_remote_dft(mcapi_endpoint_t local_ep, complex_float_t* out, int N, int inv)
@@ -82,25 +108,36 @@ void recv_remote_dft(mcapi_endpoint_t local_ep, complex_float_t* out, int N, int
 	mcapi_status_t mcapi_status;
 	size_t recv_size = 0;
 
-	struct {
-		message_header_t header;
-		complex_float_t data[N];
-	} remote_data;
-	remote_data.header.type = inv ? MSG_IDFT_BUFFER : MSG_DFT_BUFFER;
-	remote_data.header.length = N;
+	size_t max_sample_count = (MAX_MESSAGE_SIZE - sizeof(message_header_t)) / sizeof(complex_float_t);
+	size_t max_data_size = max_sample_count * sizeof(complex_float_t);
+	size_t max_num_messages = N / max_sample_count;
 
-//	mcapi_uint_t res = 0;
-//	while (res == 0)
-//	{
-//		res = mcapi_msg_available(local_ep, &mcapi_status);
-//		printf("Avail: %d\n", res);
-//		mcapiErrorCheck(mcapi_status, "msg_available", 2);
-//	}
+	bool end = false;
+	size_t offset = 0;
+	while (!end)
+	{
+		struct {
+			message_header_t header;
+			complex_float_t data[max_sample_count];
+		} remote_data;
 
-	mcapi_msg_recv(local_ep, &remote_data, sizeof(remote_data), &recv_size, &mcapi_status);
-	mcapiErrorCheck(mcapi_status, "recv_remote_dft", 2);
+		mcapi_msg_recv(local_ep, &remote_data, sizeof(remote_data), &recv_size, &mcapi_status);
+		mcapiErrorCheck(mcapi_status, "recv_remote_dft", 2);
 
-	memcpy(out, remote_data.data, remote_data.header.length * sizeof(complex_float_t));
+		memcpy(out, remote_data.data + offset, remote_data.header.length * sizeof(complex_float_t));
+
+		offset += remote_data.header.length * sizeof(complex_float_t);
+
+		if (remote_data.header.total_count == remote_data.header.message_index - 1)
+		{
+			end = true;
+		}
+	}
+
+	if (offset != N)
+	{
+		printf("WARNING: Received buffer does not match the requirements");
+	}
 }
 #endif
 
@@ -227,10 +264,17 @@ int main()
 			j ++;
 	#endif
 #else
+	#ifdef USE_FFT
+			// Perform FFT
+			Radix2FFT(buffer, out_buffer, test_chunk_lengths[i]);
+			// Perform inverse FFT
+			Radix2iFFT(out_buffer, buffer, test_chunk_lengths[i]);
+	#else
 			// Perform local DFT
 			dft(buffer, out_buffer, test_chunk_lengths[i], 0);
 			// Perform local iDFT
 			dft(buffer, out_buffer, test_chunk_lengths[i], 1);
+	#endif
 #endif
 		}
 
