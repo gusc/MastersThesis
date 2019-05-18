@@ -1,7 +1,8 @@
 /*****************************************************************************
- * MCAPI_FFT_Core1.c
+ * MCAPI_FFT_Core2.c
  *****************************************************************************/
 
+#include "Config.h"
 #include <sys/platform.h>
 #include <sys/adi_core.h>
 #include <mcapi.h>
@@ -22,7 +23,6 @@ char __argv_string[] = "";
 #define CORE_PORT_NUM	6
 #define CPU_PORT_NUM	4 // Core1 connects to 101, Core2 to 102
 
-#define MAX_MESSAGE_SIZE 256
 #define MAX_DATA_SIZE (MAX_MESSAGE_SIZE - sizeof(message_header_t))
 #define MAX_SAMPLE_COUNT ((MAX_MESSAGE_SIZE - sizeof(message_header_t)) / sizeof(complex_float_t))
 
@@ -41,7 +41,7 @@ static void mcapiErrorCheck(mcapi_status_t mcapi_status, const char *psContext, 
 	if ((MCAPI_SUCCESS != mcapi_status) && (MCAPI_PENDING != mcapi_status))
 	{
 		mcapi_display_status(mcapi_status, errorStringBuff, sizeof(errorStringBuff));
-		printf("MCAPI Core 1 Error %s, status = %d [%s]\n",
+		printf("MCAPI Core 2 Error %s, status = %d [%s]\n",
 				psContext,
 				mcapi_status,
 				errorStringBuff);
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 
 	/* DFT processor */
 
-	printf("Starting core 1 processor\n");
+	printf("Starting core 2 processor\n");
 
 	bool end_process_received = false;
 	size_t recv_size = 0;
@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
 
 				// Send split buffers
 
-				size_t num_messages = N / MAX_SAMPLE_COUNT;
+				size_t num_messages = (N + MAX_SAMPLE_COUNT - 1) / MAX_SAMPLE_COUNT;
 				for (size_t i = 0; i < num_messages; i ++)
 				{
 					size_t offset = i * MAX_SAMPLE_COUNT;

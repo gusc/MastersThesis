@@ -2,6 +2,7 @@
  * MCAPI_FFT_Core1.c
  *****************************************************************************/
 
+#include "Config.h"
 #include <sys/platform.h>
 #include <sys/adi_core.h>
 #include <mcapi.h>
@@ -22,7 +23,6 @@ char __argv_string[] = "";
 #define CORE_PORT_NUM	5
 #define CPU_PORT_NUM	3 // Core1 connects to 101, Core2 to 102
 
-#define MAX_MESSAGE_SIZE 256
 #define MAX_DATA_SIZE (MAX_MESSAGE_SIZE - sizeof(message_header_t))
 #define MAX_SAMPLE_COUNT ((MAX_MESSAGE_SIZE - sizeof(message_header_t)) / sizeof(complex_float_t))
 
@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
 
 				// Send split buffers
 
-				size_t num_messages = N / MAX_SAMPLE_COUNT;
+				size_t num_messages = (N + MAX_SAMPLE_COUNT - 1) / MAX_SAMPLE_COUNT;
 				for (size_t i = 0; i < num_messages; i ++)
 				{
 					size_t offset = i * MAX_SAMPLE_COUNT;

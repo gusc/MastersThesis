@@ -2,15 +2,12 @@
  * MCAPI_DFT_Core0_Core0.c
  *****************************************************************************/
 
-//#define BUILD_APP 1 // Runs on OS, otherwise runs bare metal
-//#define LOCAL_DFT 1 // Don't use MCAPI, just DFT in-place
-//#define PARALEL_DFT 1 // When running MCAPI, try to parallelize DFT on multiple SHARC cores
-//#define USE_FFT 1 // Use Radix-2 FFT instead
+#include "Config.h"
+#include "Benchmark.h"
 
 #ifndef BUILD_APP
 #include <sys/platform.h>
 #include <sys/adi_core.h>
-#include <cycle_count.h>
 #include "adi_initialize.h"
 #endif
 
@@ -25,10 +22,9 @@
 #define CORE2_PORT_NUM	6
 #define CPU_PORT_NUM1	3
 #define CPU_PORT_NUM2	4
+#define MAX_DATA_SIZE (MAX_MESSAGE_SIZE - sizeof(message_header_t))
+#define MAX_SAMPLE_COUNT ((MAX_MESSAGE_SIZE - sizeof(message_header_t)) / sizeof(complex_float_t))
 #endif
-
-#define MAX_BUFFER_SIZE 4096
-#define MAX_MESSAGE_SIZE 256 // SHARC bare metal framework has 256 byte limit for MCAPI messages
 
 #include <sys/times.h>
 #include <stdint.h>
@@ -36,7 +32,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <time.h>
 #include <unistd.h>
 #include "DFT.h"
 #include "Radix2FFT.h"
@@ -70,7 +65,7 @@ void send_remote_dft(mcapi_endpoint_t local_ep, mcapi_endpoint_t remote_ep, comp
 	mcapi_status_t mcapi_status;
 
 	size_t max_sample_count = (MAX_MESSAGE_SIZE - sizeof(message_header_t)) / sizeof(complex_float_t);
-	size_t num_messages = N / max_sample_count;
+	size_t num_messages = (N + max_sample_count - 1) / max_sample_count;
 
 	for (size_t i = 0; i < num_messages; i ++)
 	{
@@ -107,25 +102,23 @@ void recv_remote_dft(mcapi_endpoint_t local_ep, complex_float_t* out, int N, int
 	mcapi_status_t mcapi_status;
 	size_t recv_size = 0;
 
-	size_t max_sample_count = (MAX_MESSAGE_SIZE - sizeof(message_header_t)) / sizeof(complex_float_t);
-
 	bool end = false;
 	size_t offset = 0;
 	while (!end)
 	{
 		struct {
 			message_header_t header;
-			complex_float_t data[max_sample_count];
+			complex_float_t data[MAX_SAMPLE_COUNT];
 		} remote_data;
 
 		mcapi_msg_recv(local_ep, &remote_data, sizeof(remote_data), &recv_size, &mcapi_status);
 		mcapiErrorCheck(mcapi_status, "recv_remote_dft", 2);
 
-		memcpy(out, remote_data.data + offset, remote_data.header.length * sizeof(complex_float_t));
+		memcpy(out + offset, remote_data.data, remote_data.header.length * sizeof(complex_float_t));
 
-		offset += remote_data.header.length * sizeof(complex_float_t);
+		offset += remote_data.header.length;
 
-		if (remote_data.header.total_count == remote_data.header.message_index - 1)
+		if (remote_data.header.message_index == remote_data.header.total_count - 1)
 		{
 			end = true;
 		}
@@ -148,16 +141,20 @@ int main()
 	 */
 	adi_initComponents();
 	
+	#ifndef LOCAL_DFT
 	/**
 	 * The default startup code does not include any functionality to allow
 	 * core 0 to enable core 1 and core 2. A convenient way to enable
 	 * core 1 and core 2 is to use the adi_core_enable function. 
 	 */
 	adi_core_enable(ADI_CORE_SHARC0);
+		#ifdef PARALEL_DFT
 	adi_core_enable(ADI_CORE_SHARC1);
-
-	CCNTR_INIT;
+		#endif
+	#endif
 #endif
+
+	InitBenchmark();
 
 #ifndef LOCAL_DFT
 	/* Initialize MCAPI */
@@ -201,17 +198,19 @@ int main()
 #endif
 
 	printf("Prepare test buffer\n");
-	complex_float_t buffer[MAX_BUFFER_SIZE];
-	memset(buffer, 0, sizeof(buffer));
+	complex_float_t* buffer = (complex_float_t*)calloc(MAX_BUFFER_SIZE, sizeof(complex_float_t));
 	for (int i = 0; i < MAX_BUFFER_SIZE; i ++)
 	{
-		buffer[i].re = (float)rand() / (float)RAND_MAX;
+		(buffer + i)->re = (float)rand() / (float)RAND_MAX;
 	}
+#ifdef LOCAL_DFT
+	complex_float_t* out_buffer = (complex_float_t*)calloc(MAX_BUFFER_SIZE, sizeof(complex_float_t));
+#endif
 
 	printf("Run tests\n");
 
 	// Try different buffer sizes
-	int test_chunk_lengths[] = {16, 32, 64, 128, 256, 512, 1024, 2048, 4096};
+	int test_chunk_lengths[] = {16, 32, 64, 128, 256, 512, 1024};
 
 	// Imitate a ~1 sec audio processing @ 44.1kHz rounded to power of 2 divisable number
 	int total_samples = 45056;
@@ -222,19 +221,11 @@ int main()
 
 		int repeat_count = total_samples / test_chunk_lengths[i];
 #ifdef LOCAL_DFT
-		complex_float_t out_buffer[test_chunk_lengths[i]];
-		memset(out_buffer, 0, sizeof(out_buffer));
+		memset(out_buffer, 0, test_chunk_lengths[i] * sizeof(complex_float_t));
 #endif
 
 		// Mark the start
-#ifndef BUILD_APP
-		CCNTR_START;
-#else
-		struct tms st_cpu;
-		struct tms en_cpu;
-		clock_t clock_start = clock();
-		clock_t st_time = times(&st_cpu);
-#endif
+		StartBenchmark();
 
 		// Repeat test 1000 times
 		for (int j = 0; j < repeat_count; j ++)
@@ -273,28 +264,11 @@ int main()
 			dft(out_buffer, buffer, test_chunk_lengths[i], 1);
 	#endif
 #endif
+			UpdateBenchmark();
 		}
 
 		// Benchmark test and print out result
-#ifndef BUILD_APP
-		CCNTR_STOP;
-		int res = CCNTR_READ;
-		float time_diff = (float)(res) / 450000000.f;
-		printf("CCNTR %jd, @450mHz\n", (intmax_t)res);
-#else
-		clock_t clock_end = clock();
-		clock_t en_time = times(&en_cpu);
-		long ticks = sysconf(_SC_CLK_TCK);
-		printf("Real Time: %jd, User Time %jd, System Time %jd, Ticks: %jd\n",
-		        (intmax_t)(en_time - st_time),
-				(intmax_t)(en_cpu.tms_utime - st_cpu.tms_utime),
-		        (intmax_t)(en_cpu.tms_stime - st_cpu.tms_stime),
-				(intmax_t)ticks);
-		printf("Clock Time: %jd, Clocks per sec: %jd\n",
-				(intmax_t)(clock_end - clock_start), (intmax_t)CLOCKS_PER_SEC);
-		float time_diff = (float)(clock_end - clock_start) / CLOCKS_PER_SEC;
-#endif
-		printf("Done %d repeats in %.3f sec\n", repeat_count, time_diff);
+		StopBenchmark();
 	}
 
 	return 0;
