@@ -5,7 +5,7 @@
 //#define BUILD_APP 1 // Runs on OS, otherwise runs bare metal
 //#define LOCAL_DFT 1 // Don't use MCAPI, just DFT in-place
 //#define PARALEL_DFT 1 // When running MCAPI, try to parallelize DFT on multiple SHARC cores
-#define USE_FFT 1 // Use Radix-2 FFT instead
+//#define USE_FFT 1 // Use Radix-2 FFT instead
 
 #ifndef BUILD_APP
 #include <sys/platform.h>
@@ -211,7 +211,7 @@ int main()
 	printf("Run tests\n");
 
 	// Try different buffer sizes
-	int test_chunk_lengths[] = {4, 8, 16};
+	int test_chunk_lengths[] = {16, 32, 64, 128, 256, 512, 1024, 2048, 4096};
 
 	// Imitate a ~1 sec audio processing @ 44.1kHz rounded to power of 2 divisable number
 	int total_samples = 45056;
@@ -270,7 +270,7 @@ int main()
 			// Perform local DFT
 			dft(buffer, out_buffer, test_chunk_lengths[i], 0);
 			// Perform local iDFT
-			dft(buffer, out_buffer, test_chunk_lengths[i], 1);
+			dft(out_buffer, buffer, test_chunk_lengths[i], 1);
 	#endif
 #endif
 		}
