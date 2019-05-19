@@ -8,7 +8,7 @@
 #ifndef UART_H_
 #define UART_H_
 
-#include <stdint.h>
+#include <stdlib.h>
 
 void InitUart(const char* socket);
 int SendBytes(const void* data, size_t length);

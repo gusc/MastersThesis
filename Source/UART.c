@@ -8,6 +8,8 @@
 #include "Config.h"
 #include "UART.h"
 
+#include <unistd.h>
+#include <stdio.h>
 #include <fcntl.h>
 #include <termios.h>
 
@@ -43,9 +45,9 @@ int SendBytes(const void* data, size_t length)
 
 int ReadBytes(void* data, size_t length)
 {
-	if (uart)
+	if (uart != -1)
 	{
-		return read(uart0_filestream, data, length);
+		return read(uart, data, length);
 	}
 	return 0;
 }

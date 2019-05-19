@@ -145,12 +145,11 @@ void recv_remote_dft(mcapi_endpoint_t local_ep, complex_float_t* out, int N, int
 void send_remote_dft(complex_float_t* in, int N, int inv)
 {
 #ifdef USE_FFT
-	__attribute__((packed))
 	struct {
 		int length;
 		int direction;
 		complex_float_t data[N];
-	} uart_data;
+	} __attribute__((packed)) uart_data;
 	uart_data.length = N;
 	uart_data.direction = inv;
 	memcpy(uart_data.data, in, N * sizeof(complex_float_t));
@@ -166,12 +165,11 @@ void send_remote_dft(complex_float_t* in, int N, int inv)
 void recv_remote_dft(complex_float_t* in, int N, int inv)
 {
 #ifdef USE_FFT
-	__attribute__((packed))
 	struct {
 		int length;
 		int direction;
 		complex_float_t data[MAX_BUFFER_SIZE];
-	} uart_data;
+	} __attribute__((packed)) uart_data;
 	int res = ReadBytes(&uart_data, sizeof(uart_data));
 	if (res > 0)
 	{
