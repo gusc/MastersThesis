@@ -162,7 +162,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/system}&quot;"/>
 									<listOptionValue builtIn="false" value="/home/gusc/sc5xx_dev/buildroot/output/build/libmcapi-HEAD/libmcapi-2.0/include"/>
 								</option>
-								<option id="arm.base.compiler.option.additionaloptions.2090840152" superClass="arm.base.compiler.option.additionaloptions" valueType="stringList">
+								<option id="arm.base.compiler.option.additionaloptions.2090840152" name="Additional options:" superClass="arm.base.compiler.option.additionaloptions" valueType="stringList">
 									<listOptionValue builtIn="false" value="-std=gnu99"/>
 								</option>
 								<inputType id="arm.toolchain.linux.c.input.911500638" superClass="arm.toolchain.linux.c.input"/>
