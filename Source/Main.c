@@ -165,15 +165,20 @@ void send_remote_dft(complex_float_t* in, int N, int inv)
 void recv_remote_dft(complex_float_t* in, int N, int inv)
 {
 #ifdef USE_FFT
-	struct {
-		int length;
-		int direction;
-		complex_float_t data[MAX_BUFFER_SIZE];
-	} __attribute__((packed)) uart_data;
-	int res = ReadBytes(&uart_data, sizeof(uart_data));
-	if (res > 0)
+	int length = 0;
+	int res = ReadBytes(&length, sizeof(length));
+	if (res == sizeof(length))
 	{
-
+		size_t num_bytes = N;
+		if (num_bytes > length)
+		{
+			num_bytes = length;
+		}
+		res = ReadBytes(in, num_bytes);
+		if (res != num_bytes)
+		{
+			printf("Failed to read %u bytes (result %d)", num_bytes, res);
+		}
 	}
 	else
 	{
