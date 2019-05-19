@@ -9,9 +9,10 @@
 #include <sys/platform.h>
 #include <sys/adi_core.h>
 #include "adi_initialize.h"
-#endif
+#endif // BUILD_APP
 
 #ifndef LOCAL_DFT
+#ifndef USE_UART
 #include <mcapi.h>
 #include "Messages.h"
 #define DOMAIN			0
@@ -24,7 +25,10 @@
 #define CPU_PORT_NUM2	4
 #define MAX_DATA_SIZE (MAX_MESSAGE_SIZE - sizeof(message_header_t))
 #define MAX_SAMPLE_COUNT 29 //((MAX_MESSAGE_SIZE - sizeof(message_header_t)) / sizeof(complex_float_t))
-#endif
+#else // USE_UART
+#include "UART.h"
+#endif // USE_UART
+#endif // LOCAL_DFT
 
 #include <sys/times.h>
 #include <stdint.h>
@@ -37,6 +41,7 @@
 #include "Radix2FFT.h"
 
 #ifndef LOCAL_DFT
+#ifndef USE_UART
 /*
  * mcapiErrorCheck()
  *
@@ -79,11 +84,11 @@ void send_remote_dft(mcapi_endpoint_t local_ep, mcapi_endpoint_t remote_ep, comp
 			num_samples = MAX_SAMPLE_COUNT;
 		}
 
-#ifdef USE_FFT
+		#ifdef USE_FFT
 		remote_data.header.type = inv ? MSG_IFFT_BUFFER : MSG_FFT_BUFFER;
-#else
+		#else
 		remote_data.header.type = inv ? MSG_IDFT_BUFFER : MSG_DFT_BUFFER;
-#endif
+		#endif
 		remote_data.header.length = num_samples;
 		remote_data.header.total_length = N;
 		remote_data.header.total_count = num_messages;
@@ -133,7 +138,52 @@ void recv_remote_dft(mcapi_endpoint_t local_ep, complex_float_t* out, int N, int
 		printf("WARNING: Received buffer does not match the requirements");
 	}
 }
-#endif
+#else // USE_UART
+void send_remote_dft(complex_float_t* in, int N, int inv)
+{
+#ifdef USE_FFT
+	__attribute__((packed))
+	struct {
+		int length;
+		int direction;
+		complex_float_t data[N];
+	} uart_data;
+	uart_data.length = N;
+	uart_data.direction = inv;
+	memcpy(uart_data.data, in, N * sizeof(complex_float_t));
+	int res = SendBytes(&uart_data, sizeof(uart_data));
+	if (res != sizeof(uart_data))
+	{
+		printf("Sending size mismatch %d, %u", res, sizeof(uart_data));
+	}
+#else // USE_FFT
+	printf("DFT over UART not implemented");
+#endif // USE_FFT
+}
+void recv_remote_dft(complex_float_t* in, int N, int inv)
+{
+#ifdef USE_FFT
+	__attribute__((packed))
+	struct {
+		int length;
+		int direction;
+		complex_float_t data[MAX_BUFFER_SIZE];
+	} uart_data;
+	int res = ReadBytes(&uart_data, sizeof(uart_data));
+	if (res > 0)
+	{
+
+	}
+	else
+	{
+		printf("Reading UART failed %d", res);
+	}
+#else // USE_FFT
+	printf("DFT over UART not implemented");
+#endif // USE_FFT
+}
+#endif // USE_UART
+#endif // LOCAL_DFT
 
 int main()
 {
@@ -145,44 +195,45 @@ int main()
 	 */
 	adi_initComponents();
 	
-	#ifndef LOCAL_DFT
+#ifndef LOCAL_DFT
 	/**
 	 * The default startup code does not include any functionality to allow
 	 * core 0 to enable core 1 and core 2. A convenient way to enable
 	 * core 1 and core 2 is to use the adi_core_enable function. 
 	 */
 	adi_core_enable(ADI_CORE_SHARC0);
-		#ifdef PARALEL_DFT
+#ifdef PARALEL_DFT
 	adi_core_enable(ADI_CORE_SHARC1);
-		#endif
-	#endif
-#endif
+#endif // PARALEL_DFT
+#endif // LOCAL_DFT
+#endif // BUILD_APP
 
 	InitBenchmark();
 
 #ifndef LOCAL_DFT
+#ifndef USE_UART
 	/* Initialize MCAPI */
 
 	#ifndef BUILD_APP
 	int timeout = MCAPI_TIMEOUT_INFINITE;
-	#else
+	#else // BUILD_APP
 	int timeout = 5000;
-	#endif
+	#endif // BUILD_APP
 
 	mcapi_status_t mcapi_status;
 	mcapi_endpoint_t local_ep1;
 	mcapi_endpoint_t remote_ep1;
-	#ifdef PARALEL_DFT
+#ifdef PARALEL_DFT
 	mcapi_endpoint_t local_ep2;
 	mcapi_endpoint_t remote_ep2;
-	#endif
+#endif // PARALEL_DFT
 
-	#ifdef BUILD_APP
+#ifdef BUILD_APP
 	mcapi_param_t mcapi_parms;
 	mcapi_info_t mcapi_version;
 	mcapi_initialize(DOMAIN, NODE_0, NULL, &mcapi_parms, &mcapi_version, &mcapi_status);
 	mcapiErrorCheck(mcapi_status, "initialize", 2);
-	#endif
+#endif // BUILD_APP
 
 	local_ep1 = mcapi_endpoint_create(CPU_PORT_NUM1, &mcapi_status);
 	mcapiErrorCheck(mcapi_status, "create endpoint", 2);
@@ -191,15 +242,20 @@ int main()
 	mcapiErrorCheck(mcapi_status, "get endpoint", 2);
 	printf("Node 1 connected\n");
 
-	#ifdef PARALEL_DFT
+#ifdef PARALEL_DFT
 	local_ep2 = mcapi_endpoint_create(CPU_PORT_NUM2, &mcapi_status);
 	mcapiErrorCheck(mcapi_status, "create endpoint", 2);
 
 	remote_ep2 = mcapi_endpoint_get(DOMAIN, NODE_2, CORE2_PORT_NUM, timeout, &mcapi_status);
 	mcapiErrorCheck(mcapi_status, "get endpoint", 2);
 	printf("Node 2 connected\n");
-	#endif
-#endif
+#endif // PARALEL_DFT
+#else // USE_UART
+
+	InitUart("/dev/ttyAMA0");
+
+#endif // USE_UART
+#endif // LOCAL_DFT
 
 	printf("Prepare test buffer\n");
 	complex_float_t* buffer = (complex_float_t*)calloc(MAX_BUFFER_SIZE, sizeof(complex_float_t));
@@ -207,9 +263,9 @@ int main()
 	{
 		(buffer + i)->re = (float)rand() / (float)RAND_MAX;
 	}
-#ifdef LOCAL_DFT
+#if defined(LOCAL_DFT) || defined(USE_UART)
 	complex_float_t* out_buffer = (complex_float_t*)calloc(MAX_BUFFER_SIZE, sizeof(complex_float_t));
-#endif
+#endif // LOCAL_DFT || USE_UART
 
 	printf("Run tests\n");
 
@@ -224,9 +280,9 @@ int main()
 		printf("Testing %d sample buffer\n", test_chunk_lengths[i]);
 
 		int repeat_count = total_samples / test_chunk_lengths[i];
-#ifdef LOCAL_DFT
+#if defined(LOCAL_DFT) || defined(USE_UART)
 		memset(out_buffer, 0, test_chunk_lengths[i] * sizeof(complex_float_t));
-#endif
+#endif // LOCAL_DFT || USE_UART
 
 		// Mark the start
 		StartBenchmark();
@@ -235,39 +291,48 @@ int main()
 		for (int j = 0; j < repeat_count; j ++)
 		{
 #ifndef LOCAL_DFT
-			// Perform remote DFT
+#ifndef USE_UART
+			// Perform remote DFT/FFT
 			send_remote_dft(local_ep1, remote_ep1, buffer, test_chunk_lengths[i], 0);
-	#ifdef PARALEL_DFT
+#ifdef PARALEL_DFT
 			send_remote_dft(local_ep2, remote_ep2, buffer, test_chunk_lengths[i], 0);
-	#endif
+#endif // PARALEL_DFT
 			recv_remote_dft(local_ep1, buffer, test_chunk_lengths[i], 0);
-	#ifdef PARALEL_DFT
+#ifdef PARALEL_DFT
 			recv_remote_dft(local_ep2, buffer, test_chunk_lengths[i], 0);
-	#endif
+#endif // PARALEL_DFT
 
-			// Perform remote iDFT
+			// Perform remote iDFT/FFT
 			send_remote_dft(local_ep1, remote_ep1, buffer, test_chunk_lengths[i], 1);
-	#ifdef PARALEL_DFT
+#ifdef PARALEL_DFT
 			send_remote_dft(local_ep2, remote_ep2, buffer, test_chunk_lengths[i], 1);
-	#endif
+#endif // PARALEL_DFT
 			recv_remote_dft(local_ep1, buffer, test_chunk_lengths[i], 1);
-	#ifdef PARALEL_DFT
+#ifdef PARALEL_DFT
 			recv_remote_dft(local_ep2, buffer, test_chunk_lengths[i], 1);
 			j ++;
-	#endif
-#else
-	#ifdef USE_FFT
+#endif // PARALEL_DFT
+#else // USE_UART
+			// Perform remote DFT/FFT
+			send_remote_dft(buffer, test_chunk_lengths[i], 0);
+			recv_remote_dft(buffer, test_chunk_lengths[i], 0);
+			// Perform remote iDFT/FFT
+			send_remote_dft(buffer, test_chunk_lengths[i], 1);
+			recv_remote_dft(buffer, test_chunk_lengths[i], 1);
+#endif // USE_UART
+#else // LOCAL_DFT
+#ifdef USE_FFT
 			// Perform FFT
 			Radix2FFT(buffer, out_buffer, test_chunk_lengths[i]);
 			// Perform inverse FFT
 			Radix2iFFT(out_buffer, buffer, test_chunk_lengths[i]);
-	#else
+#else // USE_FFT
 			// Perform local DFT
 			dft(buffer, out_buffer, test_chunk_lengths[i], 0);
 			// Perform local iDFT
 			dft(out_buffer, buffer, test_chunk_lengths[i], 1);
-	#endif
-#endif
+#endif // USE_FFT
+#endif // LOCAL_DFT
 			UpdateBenchmark();
 		}
 

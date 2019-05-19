@@ -1,3 +1,10 @@
+/*
+ * Radix2FFT.c
+ *
+ *  Created on: May 16, 2019
+ *      Author: Gusts Kaksis
+ */
+
 #include "Radix2FFT.h"
 
 #include <math.h>

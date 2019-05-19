@@ -2,11 +2,13 @@
  * Messages.h
  *
  *  Created on: May 10, 2019
- *      Author: IEUser
+ *      Author: Gusts Kaksis
  */
 
 #ifndef MESSAGES_H_
 #define MESSAGES_H_
+
+// MCAPI message configuration
 
 typedef int message_t;
 typedef struct
@@ -24,6 +26,5 @@ static const message_t MSG_FFT_BUFFER = 3;
 static const message_t MSG_IFFT_BUFFER = 4;
 static const message_t MSG_ERROR = 99;
 static const message_t MSG_END_PROCESS = 100;
-
 
 #endif /* MESSAGES_H_ */

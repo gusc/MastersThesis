@@ -2,7 +2,7 @@
  * DFT.h
  *
  *  Created on: May 9, 2019
- *      Author: IEUser
+ *      Author: Gusts Kaksis
  */
 
 #ifndef DFT_H_
