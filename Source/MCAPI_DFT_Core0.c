@@ -23,7 +23,7 @@
 #define CPU_PORT_NUM1	3
 #define CPU_PORT_NUM2	4
 #define MAX_DATA_SIZE (MAX_MESSAGE_SIZE - sizeof(message_header_t))
-#define MAX_SAMPLE_COUNT ((MAX_MESSAGE_SIZE - sizeof(message_header_t)) / sizeof(complex_float_t))
+#define MAX_SAMPLE_COUNT 29 //((MAX_MESSAGE_SIZE - sizeof(message_header_t)) / sizeof(complex_float_t))
 #endif
 
 #include <sys/times.h>
@@ -64,22 +64,21 @@ void send_remote_dft(mcapi_endpoint_t local_ep, mcapi_endpoint_t remote_ep, comp
 {
 	mcapi_status_t mcapi_status;
 
-	size_t max_sample_count = (MAX_MESSAGE_SIZE - sizeof(message_header_t)) / sizeof(complex_float_t);
-	size_t num_messages = (N + max_sample_count - 1) / max_sample_count;
+	struct {
+		message_header_t header;
+		complex_float_t data[MAX_SAMPLE_COUNT];
+	} remote_data;
 
+	size_t num_messages = (N + MAX_SAMPLE_COUNT - 1) / MAX_SAMPLE_COUNT;
 	for (size_t i = 0; i < num_messages; i ++)
 	{
-		size_t offset = i * max_sample_count;
+		size_t offset = i * MAX_SAMPLE_COUNT;
 		size_t num_samples = N - offset;
-		if (num_samples > max_sample_count)
+		if (num_samples > MAX_SAMPLE_COUNT)
 		{
-			num_samples = max_sample_count;
+			num_samples = MAX_SAMPLE_COUNT;
 		}
 
-		struct {
-			message_header_t header;
-			complex_float_t data[num_samples];
-		} remote_data;
 #ifdef USE_FFT
 		remote_data.header.type = inv ? MSG_IFFT_BUFFER : MSG_FFT_BUFFER;
 #else
@@ -92,7 +91,8 @@ void send_remote_dft(mcapi_endpoint_t local_ep, mcapi_endpoint_t remote_ep, comp
 
 		memcpy(remote_data.data, in + offset, remote_data.header.length * sizeof(complex_float_t));
 
-		mcapi_msg_send(local_ep, remote_ep, &remote_data, sizeof(remote_data), 0, &mcapi_status);
+		size_t remote_data_len = sizeof(message_header_t) + remote_data.header.length * sizeof(complex_float_t);
+		mcapi_msg_send(local_ep, remote_ep, &remote_data, remote_data_len, 0, &mcapi_status);
 		mcapiErrorCheck(mcapi_status, "send_remote_dft", 2);
 	}
 }
@@ -102,20 +102,24 @@ void recv_remote_dft(mcapi_endpoint_t local_ep, complex_float_t* out, int N, int
 	mcapi_status_t mcapi_status;
 	size_t recv_size = 0;
 
+	struct {
+		message_header_t header;
+		complex_float_t data[MAX_SAMPLE_COUNT];
+	} remote_data;
+
 	bool end = false;
 	size_t offset = 0;
 	while (!end)
 	{
-		struct {
-			message_header_t header;
-			complex_float_t data[MAX_SAMPLE_COUNT];
-		} remote_data;
-
 		mcapi_msg_recv(local_ep, &remote_data, sizeof(remote_data), &recv_size, &mcapi_status);
 		mcapiErrorCheck(mcapi_status, "recv_remote_dft", 2);
 
-		memcpy(out + offset, remote_data.data, remote_data.header.length * sizeof(complex_float_t));
-
+		size_t data_len = remote_data.header.length * sizeof(complex_float_t);
+		if (data_len > (MAX_BUFFER_SIZE - offset) * sizeof(complex_float_t))
+		{
+			data_len = (MAX_BUFFER_SIZE - offset) * sizeof(complex_float_t);
+		}
+		memcpy(out + offset, remote_data.data, data_len);
 		offset += remote_data.header.length;
 
 		if (remote_data.header.message_index == remote_data.header.total_count - 1)
@@ -162,7 +166,7 @@ int main()
 	#ifndef BUILD_APP
 	int timeout = MCAPI_TIMEOUT_INFINITE;
 	#else
-	int timeout = 500000;
+	int timeout = 5000;
 	#endif
 
 	mcapi_status_t mcapi_status;
