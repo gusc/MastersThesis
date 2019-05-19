@@ -1,0 +1,14 @@
+// General
+
+//NET "CLK_50MHZ" LOC = "C9";
+
+// UART
+
+// J4<0>
+NET "UART_TX"  LOC = "D7" | IOSTANDARD = LVTTL  | SLEW = SLOW  | DRIVE = 6;
+// J4<1>
+NET "UART_RX"  LOC = "C7" | IOSTANDARD = LVTTL  | SLEW = SLOW  | DRIVE = 6;
+
+// Debug
+
+NET "DBG_LED" LOC = "F9" | IOSTANDARD = LVTTL | SLEW = SLOW | DRIVE = 8 ;

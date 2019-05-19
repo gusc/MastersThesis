@@ -201,6 +201,7 @@ module xfft_v7_1 (
   nfft,
   nfft_we,
   start,
+  unload,
   xn_re,
   xn_im,
   fwd_inv,
@@ -220,17 +221,18 @@ module xfft_v7_1 (
   input [4 : 0] nfft;
   input nfft_we;
   input start;
+  input unload;
   input [31 : 0] xn_re;
   input [31 : 0] xn_im;
   input fwd_inv;
   input fwd_inv_we;
   output rfd;
-  output [3 : 0] xn_index;
+  output [9 : 0] xn_index;
   output busy;
   output edone;
   output done;
   output dv;
-  output [3 : 0] xk_index;
+  output [9 : 0] xk_index;
   output [31 : 0] xk_re;
   output [31 : 0] xk_im;
 

@@ -204,17 +204,18 @@ xfft_v7_1 your_instance_name (
   .nfft(nfft), // input [4 : 0] nfft
   .nfft_we(nfft_we), // input nfft_we
   .start(start), // input start
+  .unload(unload), // input unload
   .xn_re(xn_re), // input [31 : 0] xn_re
   .xn_im(xn_im), // input [31 : 0] xn_im
   .fwd_inv(fwd_inv), // input fwd_inv
   .fwd_inv_we(fwd_inv_we), // input fwd_inv_we
   .rfd(rfd), // output rfd
-  .xn_index(xn_index), // output [3 : 0] xn_index
+  .xn_index(xn_index), // output [9 : 0] xn_index
   .busy(busy), // output busy
   .edone(edone), // output edone
   .done(done), // output done
   .dv(dv), // output dv
-  .xk_index(xk_index), // output [3 : 0] xk_index
+  .xk_index(xk_index), // output [9 : 0] xk_index
   .xk_re(xk_re), // output [31 : 0] xk_re
   .xk_im(xk_im) // output [31 : 0] xk_im
 );

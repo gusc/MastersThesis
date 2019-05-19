@@ -1,4 +1,5 @@
 # Output products list for <xfft_v7_1>
+_xmsgs/pn_parser.xmsgs
 xfft_v7_1/doc/xfft_ds260.pdf
 xfft_v7_1/doc/xfft_v7_1_readme.txt
 xfft_v7_1/doc/xfft_v7_1_vinfo.html
