@@ -1,6 +1,6 @@
 // General
 
-//NET "CLK_50MHZ" LOC = "C9";
+NET "CLK_50MHZ" LOC = "C9";
 
 // UART
 

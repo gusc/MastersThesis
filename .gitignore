@@ -113,6 +113,8 @@ xlnx_auto_0_xdb/
 xst/
 _ngo/
 _xmsgs/
+DFT_FPGA/ipcore_dir/tmp/
+DFT_FPGA/ipcore_dir/xfft_v7_1/doc/
 
 #ignore OS noise
 Thumbs.db
