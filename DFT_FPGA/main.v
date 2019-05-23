@@ -33,7 +33,7 @@ module main(
 	wire inputReady;
 	wire[7:0] outputByte;
 	wire outputReady;
-	wire sending;
+	//wire sending;
 	wire readyForMore;
 	
 	// Receive data from UART
@@ -63,8 +63,8 @@ module main(
 		.i_Clock(CLK_50MHZ),
 		.i_Tx_DV(outputReady),
 		.i_Tx_Byte(outputByte), 
-		.o_Tx_Active(sending),
-		.o_Tx_Serial(UART_OUT),
+		//.o_Tx_Active(sending),
+		.o_Tx_Serial(UART_TX),
 		.o_Tx_Done(readyForMore)
 	);
 	

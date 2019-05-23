@@ -27,23 +27,31 @@ module processor(
 		output [7:0] o_Byte
     );
 
-	reg [0:0] data_waiting = 1; // Set high when all the complex numbers are written in in_real|in_imag
-	reg [0:0] data_processed = 0; // Set high when all the transformed complex numbers are written in out_real|out_image 
-	reg [0:0] output_ready = 0; // Set high when i_ReadyForOutput was triggered
-	reg [0:0] byte_ready = 0; // Set high when o_ByteReady must be triggered
-	reg [7:0] output_byte; // The actual byte to send out
+	// UART registers
+	reg [31:0] temp_data = 0;
+	reg [31:0] temp_mask = 0;
+	reg [9:0] temp_counter = 0; // We only need 10 bits, because length is in range 0:1023
+	reg [2:0] uart_byte_counter = 0;
+	reg [0:0] uart_header = 1; // Read/Write header byte
+	reg [0:0] uart_complex_real = 1; // Read/Write real part of complex number structure
 	
-	assign o_ByteReady = byte_ready;
-	assign o_Byte = output_byte;
+	reg [0:0] i_ByteReadyPrev = 0;
+	reg [0:0] i_ReadyForOutputPrev = 0;
+	
+	reg [0:0] o_ByteReadyLocal = 0;
+	reg [7:0] o_ByteLocal; // The actual byte to send out
+	
+	assign o_ByteReady = o_ByteReadyLocal;
+	assign o_Byte = o_ByteLocal;
 	
 	// FFT configuration
-	reg [31:0] length = 0;
-	// Complex number input
-	reg [31:0] in_real [1023:0];
-	reg [31:0] in_imag [1023:0];
-	// Complex number output
-	reg [31:0] out_real [1023:0];
-	reg [31:0] out_imag [1023:0];
+	reg [9:0] length = 0; // We only need 10 bits, because length is in range 0:1023
+	// Complex number buffer
+	reg [31:0] buff_real [1023:0];
+	reg [31:0] buff_imag [1023:0];
+	// Complex number buffer
+	reg [31:0] buff_real_out [1023:0];
+	reg [31:0] buff_imag_out [1023:0];
 	
 	// FFT input wires
 	reg [4:0] fft_nfft = 0; // Element count in the FFT buffer
@@ -53,98 +61,18 @@ module processor(
 	reg [0:0] fft_unload = 0; // Do start FFT data unload when high
 	reg [31:0] fft_xn_re; // Xn real value input
 	reg [31:0] fft_xn_im; // Xn imaginary value input
-	wire [9:0] fft_xn_index; // Current Xn index
-	reg [9:0] _fft_xn_index; // The actual register
-	assign fft_xn_index = _fft_xn_index;
 	// FFT output wires
 	wire fft_rfd; // Ready to load data when high
 	wire fft_dv; // Ready to unload the data when high
-	wire [31:0] fft_xk_re; // Xk real value input
-	wire [31:0] fft_xk_im; // Xk imaginary value input
-	wire [9:0] fft_xk_index; // Current Xk index
+	wire [31:0] fft_xk_re; // Xk real value output
+	wire [31:0] fft_xk_im; // Xk imaginary value output
+	wire [9:0] fft_xk_index; // Current Xk index for unloading data
+	wire [9:0] fft_xn_index; // Current Xn index for loading data
 	
-	wand read_data;
-	assign read_data = data_waiting;
-	assign read_data = i_ByteReady;
+	reg [9:0] fft_xn_indexPrev = 0;
+	reg [9:0] fft_xk_indexPrev = 0;
 	
-	// Start FFT calculation when we've received all the data from UART and FFT is ready for data
-	wand calculate_fft;
-	assign calculate_fft = data_loaded;
-	assign calculate_fft = fft_rfd;
-	
-	// Do actual output when output is ready and all the data has been processed
-	wand return_data;
-	assign return_data = output_ready;
-	assign return_data = data_processed;
-	
-	reg [31:0] fft_out_counter = 0;
-	reg [31:0] fft_in_counter = 0;
-	
-	// UART RX processing
-	reg [31:0] load_temp = 0;
-	reg [31:0] load_mask = 0;
-	reg [31:0] load_counter = 0;
-	reg [2:0] load_byte_counter = 0;
-	reg [0:0] load_header = 1; // Read/Write header byte
-	reg [0:0] load_complex_real = 1; // Read/Write real part of complex number structure
-	always @(posedge read_data) begin
-		if (load_header == 1) begin
-			// Read header byte
-			fft_nfft = (i_Byte & 8'b00001111);
-			fft_inv = ((i_Byte & 8'b00010000) >> 5);
-			length = (2 << (fft_nfft - 1));
-			
-			// Switch state to complex reader
-			load_counter = 0;
-			fft_in_counter = 0;
-			fft_out_counter = 0;
-			load_header = 0;
-			load_complex_real = 1;
-			
-			// Signal FFT to do internal setup
-			fft_setup = 1;
-		end else begin
-			// Read complex numbers
-			load_temp = i_Byte;
-			load_temp = (load_temp << load_byte_counter);
-			load_mask = (~(32'hFF << load_byte_counter));
-			if (load_complex_real == 1) begin
-				// Read next real part
-				in_real[load_counter] = ((in_real[load_counter] & load_mask) | load_temp);
-				if (load_byte_counter == 3) begin
-					load_complex_real = 0;
-				end
-			end else begin
-				// Read next imaginary part
-				in_imag[load_counter] = ((in_imag[load_counter] & load_mask) | load_temp);
-				if (load_byte_counter == 3) begin
-					if (load_counter < length) begin
-						// Read next complex numbers
-						load_counter = load_counter + 1; 
-					end else begin
-						// Reached the end of the stream - reset reader state
-						load_header = 1;
-						data_loaded = 1;
-					end
-				end
-			end
-			
-			// Increment byte offset
-			load_byte_counter = load_byte_counter + 1;
-			
-			// Signal FFT to stop setup
-			fft_setup = 0;
-		end
-	end
-	
-	// When ready to calculate send out data
-	always @(posedge calculate_fft) begin
-		fft_xn_re = in_real[fft_in_counter];
-		fft_xn_im = in_imag[fft_in_counter];
-		_fft_xn_index = fft_in_counter;
-		fft_in_counter = fft_in_counter + 1;
-	end
-	
+	// Connect FFT processor
 	xfft_v7_1 xfft (
 		.clk(i_Clock),
 		.nfft(fft_nfft),
@@ -160,83 +88,151 @@ module processor(
 		.dv(fft_dv),
 		.xk_index(fft_xk_index),
 		.xk_re(fft_xk_re),
-		.xk_im(ffT_xk_im)
+		.xk_im(fft_xk_im)
 	);
-
-	// Receive data from FFT
-	always @(posedge fft_dv) begin
-		out_real[fft_xk_index] = fft_xn_re;
-		out_imag[fft_xk_index] = fft_xk_im;
-		fft_out_counter = fft_out_counter + 1;
-		if (fft_out_counter == length) begin
-			data_loaded = 0;
-			data_processed = 1;
-		end
-	end
 	
-	// Store output-ready state for later use and clear byte_ready as it's probably not
-	always @(posedge i_ReadyForOutput) begin
-		output_ready = 1;
-		byte_ready = 0;
-	end
+	// State machine - we have multiple states:
+	// 0 - UART RX state when we receive data from UART
+	// 1 - FFT Load state when we load data into FFT
+	// 2 - FFT Unload state when we unload data from FFT
+	// 3 - UART TX state when we send data to UART
+	reg [1:0] state;
 	
-	// Send data to UART TX
-	reg [31:0] write_temp = 0;
-	reg [31:0] write_mask = 0;
-	reg [31:0] write_counter = 0;
-	reg [2:0] write_byte_counter = 0;
-	reg [0:0] write_header = 1; // Read/Write header byte
-	reg [0:0] write_complex_real = 1; // Read/Write real part of complex number structure
-	always @(posedge return_data) begin
-		if (write_header == 1) begin
-			// Write header byte
-			output_byte = 0; 
-			output_byte = output_byte | fft_inv;
-			output_byte = output_byte << 5;
-			output_byte = ((output_byte & 8'b00010000) | fft_nfft);
-			
-			// Switch state to complex writer
-			write_counter = 0;
-			write_header = 0;
-			write_complex_real = 1;
-		end else begin
-			// Write complex numbers
-			if (write_complex_real == 1) begin
-				// Read real part, shift and mask it to 8 bit byte
-				write_mask = (8'hFF << write_byte_counter);
-				write_temp = (out_real[write_counter] & write_mask);
-				write_temp = (write_temp >> write_byte_counter);
-				output_byte = write_temp;
-				if (write_byte_counter == 3) begin
-					write_complex_real = 0;
-				end
-			end else begin
-				// Read imaginary part, shift and mask it to 8 bit byte
-				write_mask = (8'hFF << write_byte_counter);
-				write_temp = (out_imag[write_counter] & write_mask);
-				write_temp = (write_temp >> write_byte_counter);
-				output_byte = write_temp;
-				if (write_byte_counter == 3) begin
-					write_complex_real = 1;
-					if (write_counter < length) begin
-						// Read next complex numbers
-						write_counter = write_counter + 1; 
+	always @(posedge i_Clock) begin
+		if (state == 0) begin
+			// UART RX state
+			if (i_ByteReady != i_ByteReadyPrev) begin
+				// Signal has changed
+				i_ByteReadyPrev <= i_ByteReady;
+				if (i_ByteReady) begin
+					// Next byte is ready
+					if (uart_header == 1) begin
+						// Read header byte
+						fft_nfft <= (i_Byte & 8'b00011111);
+						fft_inv <= ((i_Byte & 8'b00100000) >> 5);
+						length <= (2 << ((i_Byte & 8'b00011111) - 1));
+						// Switch state to complex reader
+						uart_header <= 0;
+						uart_complex_real <= 1;
+						temp_counter <= 0;
+						uart_byte_counter <= 0;
+						// Signal FFT to do internal setup
+						fft_setup <= 1;
 					end else begin
-						// Reached the end of the stream - reset writer
-						write_header = 1;
-						data_processed = 0;
+						// Read complex numbers
+						temp_data <= ((32'h00 | i_Byte) << (uart_byte_counter * 8));
+						temp_mask <= (~(32'hFF << (uart_byte_counter * 8)));
+						if (uart_complex_real == 1) begin
+							// Read next real part
+							buff_real[temp_counter] <= ((buff_real[temp_counter] & temp_mask) | temp_data);
+							if (uart_byte_counter == 3) begin
+								uart_complex_real <= 0;
+							end
+						end else begin
+							// Read next imaginary part
+							buff_imag[temp_counter] <= ((buff_imag[temp_counter] & temp_mask) | temp_data);
+							if (uart_byte_counter == 3) begin
+								uart_complex_real <= 1;
+								if (temp_counter < length) begin
+									// Read next complex numbers
+									temp_counter <= temp_counter + 1; 
+								end else begin
+									// Reached the end of the stream - reset UART reader state
+									uart_header <= 1;
+									temp_counter <= 0;
+									// Move to next state
+									state <= state + 1;
+								end
+							end
+						end
+						// Increment byte offset (this 2 bit value can count 4 bytes and then overlap back to 0)
+						uart_byte_counter <= uart_byte_counter + 1;
 					end
 				end
 			end
-
-			write_byte_counter = write_byte_counter + 1;
+		end else if (state == 1) begin
+			// FFT Load state
+			fft_setup <= 0;
+			fft_start <= 1;
+			if (fft_rfd) begin
+				// When ready to calculate send out data
+				fft_xn_re <= buff_real[fft_xn_index];
+				fft_xn_im <= buff_imag[fft_xn_index];
+				if (fft_xn_index != fft_xn_indexPrev) begin
+					fft_xn_indexPrev <= fft_xn_index;
+					temp_counter <= temp_counter + 1;
+					if (temp_counter == length - 2) begin
+						temp_counter <= 0;
+						state <= state + 1;
+					end
+				end
+			end
+		end else if (state == 2) begin
+			// FFT Unload state
+			fft_start <= 0;
+			fft_unload <= 1;
+			if (fft_dv) begin
+				buff_real_out[fft_xk_index] <= fft_xk_re;
+				buff_imag_out[fft_xk_index] <= fft_xk_im;
+				if (fft_xk_index != fft_xk_indexPrev) begin
+					fft_xk_indexPrev <= fft_xk_index;
+					temp_counter <= temp_counter + 1;
+					if (temp_counter == length - 2) begin
+						temp_counter <= 0;
+						state <= state + 1;
+					end
+				end
+			end
+		end else if (state == 3) begin
+			// UART TX state
+			fft_unload <= 0;
+			if (i_ReadyForOutput != i_ReadyForOutputPrev) begin
+				i_ReadyForOutputPrev <= i_ReadyForOutput;
+				if (i_ReadyForOutput) begin
+					if (uart_header == 1) begin
+						// Write header byte
+						o_ByteLocal <= (((8'h00 | fft_inv) << 5) | fft_nfft);
+						
+						// Switch state to complex writer
+						temp_counter <= 0;
+						uart_header <= 0;
+						uart_complex_real <= 1;
+						uart_byte_counter <= 0;
+					end else begin
+						// Write complex numbers
+						if (uart_complex_real == 1) begin
+							// Write real part
+							o_ByteLocal <= (buff_real_out[temp_counter] >> (uart_byte_counter * 8));
+							if (uart_byte_counter == 3) begin
+								uart_complex_real <= 0;
+							end
+						end else begin
+							// Write imaginary part
+							o_ByteLocal <= (buff_imag_out[temp_counter] >> (uart_byte_counter * 8));
+							if (uart_byte_counter == 3) begin
+								uart_complex_real <= 1;
+								if (temp_counter < length) begin
+									// Read next complex numbers
+									temp_counter <= temp_counter + 1; 
+								end else begin
+									// Reached the end of the stream - reset writer
+									uart_header <= 1;
+									temp_counter <= 0;
+									// Move to first state
+									state <= 0;
+								end
+							end
+						end
+						uart_byte_counter <= uart_byte_counter + 1;
+					end
+					// Mark byte ready for reading
+					o_ByteReadyLocal <= 1;
+				end else begin
+					// Clear ready byte
+					o_ByteReadyLocal <= 0;
+				end
+			end
 		end
-		
-		// Mark byte as ready to send
-		byte_ready = 1;
-		// Drain output_ready and wait for it to be updated from UART TX module
-		output_ready = 0;
 	end
-	
 	
 endmodule

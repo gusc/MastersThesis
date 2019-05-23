@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version 14.7
-# Date: Sun May 19 13:54:14 2019
+# Date: Thu May 23 06:04:17 2019
 #
 ##############################################################
 #
@@ -42,7 +42,7 @@ SELECT Fast_Fourier_Transform xilinx.com:ip:xfft:7.1
 CSET butterfly_type=use_luts
 CSET ce=false
 CSET channels=1
-CSET complex_mult_type=use_mults_performance
+CSET complex_mult_type=use_mults_resources
 CSET component_name=xfft_v7_1
 CSET cyclic_prefix_insertion=false
 CSET data_format=floating_point
@@ -69,4 +69,4 @@ CSET transform_length=1024
 MISC pkg_timestamp=2012-08-28T14:48:07Z
 # END Extra information
 GENERATE
-# CRC: 5efca4ed
+# CRC: 2e2cbd20
